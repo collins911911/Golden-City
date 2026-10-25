@@ -53,7 +53,7 @@ const UpcomingEvents = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDF8F8]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDF8F8] font-sans">
       <Navbar />
 
       {/* Hero */}
@@ -138,7 +138,7 @@ const UpcomingEvents = () => {
                     <div key={event._id}
                       className={`group relative bg-white rounded-2xl border shadow hover:shadow-lg transition-all duration-300 overflow-hidden ${
                         today_ ? 'border-red-400 ring-2 ring-red-200' :
-                        past   ? 'border-gray-100 opacity-60' : 'border-red-100 hover:border-red-300'
+                        past   ? 'border-gray-200 opacity-75' : 'border-red-100 hover:border-red-300'
                       }`}>
 
                       {today_ && (
@@ -164,8 +164,7 @@ const UpcomingEvents = () => {
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-bold text-red-900 text-base"
-                              style={{ fontFamily: "'Cinzel', serif" }}>
+                            <h4 className="font-bold text-gray-900 text-lg">
                               {event.title}
                             </h4>
                             {today_ && (
@@ -176,16 +175,16 @@ const UpcomingEvents = () => {
                             )}
                           </div>
                           {event.description && (
-                            <p className="text-red-700/70 text-sm mt-0.5 line-clamp-1">{event.description}</p>
+                            <p className="text-gray-800 text-base font-medium mt-1 whitespace-pre-wrap">{event.description}</p>
                           )}
                           {event.time && (
-                            <p className="text-amber-600 text-xs font-semibold mt-1">⏰ {event.time}</p>
+                            <p className="text-amber-800 text-sm font-semibold mt-1">⏰ {event.time}</p>
                           )}
                         </div>
 
                         {/* Day of week */}
                         <div className="flex-shrink-0 text-right hidden sm:block">
-                          <p className="text-xs text-red-300 uppercase tracking-widest"
+                          <p className="text-xs text-red-700 font-semibold uppercase tracking-widest"
                             style={{ fontFamily: "'Cinzel', serif" }}>
                             {d.toLocaleDateString('en-US', { weekday: 'long' })}
                           </p>

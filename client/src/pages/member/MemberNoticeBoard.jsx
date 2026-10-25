@@ -36,7 +36,7 @@ const MemberNoticeBoard = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDF8F8]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDF8F8] font-sans">
       <Navbar />
 
       {/* Hero */}
@@ -126,8 +126,7 @@ const MemberNoticeBoard = () => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-red-900"
-                          style={{ fontFamily: "'Cinzel', serif" }}>
+                        <h3 className="font-bold text-gray-900 text-lg">
                           {notice.title}
                         </h3>
                         {notice.important && (
@@ -138,9 +137,9 @@ const MemberNoticeBoard = () => {
                         )}
                       </div>
                       {!isOpen && (
-                        <p className="text-red-700/70 text-sm mt-1 line-clamp-1">{notice.body}</p>
+                        <p className="text-gray-800 text-base font-medium mt-1 line-clamp-2">{notice.body}</p>
                       )}
-                      <p className="text-red-300 text-xs mt-1.5">
+                      <p className="text-red-800 text-sm font-medium mt-1.5">
                         {formatDate(notice.createdAt)} · Posted by {notice.postedBy}
                       </p>
                     </div>
@@ -154,8 +153,7 @@ const MemberNoticeBoard = () => {
                 {/* Expanded body */}
                 {isOpen && (
                   <div className="px-6 pb-6 border-t border-red-50">
-                    <p className="text-red-800 leading-relaxed pt-4"
-                      style={{ fontSize: '1.05rem' }}>
+                    <p className="text-gray-900 text-base font-medium leading-relaxed pt-4 whitespace-pre-wrap">
                       {notice.body}
                     </p>
                   </div>

@@ -69,7 +69,10 @@ const Navbar = () => {
   const links = isAdmin ? adminLinks : memberLinks;
 
   const go = (path) => { navigate(path); setMenuOpen(false); };
-  const handleLogout = () => { logout(); navigate(isAdmin ? '/gc-admin' : '/'); };
+  const handleLogout = () => {
+    logout();
+    navigate(isAdmin ? '/gc-admin' : '/member-login', { replace: true });
+  };
 
   return (
     <nav className="font-sans sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-yellow-100 shadow-sm">
