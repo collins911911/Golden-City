@@ -1,131 +1,139 @@
-const Post           = require('../models/Post');
-const { cloudinary } = require('../middleware/cloudinary');
+const Post = require('../models/Post');
+const { sendPushToMembers } = require('../utils/push');
+const { httpError } = require('../utils/validate');
 
-// POST /api/posts — admin uploads image or video
-const createPost = async (req, res) => {
-  try {
-    console.log('📸 Upload attempt by:', req.user?.name);
-    console.log('📁 File received:', req.file ? `${req.file.originalname} (${req.file.mimetype})` : 'NO FILE');
-    console.log('📝 Caption:', req.body?.caption || 'none');
+const REACTIONS = ['likes', 'loves', 'amens'];
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded. Please select an image or video.' });
-    }
-
-    console.log('☁️  Cloudinary URL:', req.file.path);
-    console.log('☁️  Cloudinary public_id:', req.file.filename);
-
-    const isVideo   = req.file.mimetype.startsWith('video/');
-    const mediaType = isVideo ? 'video' : 'image';
-
-    const post = await Post.create({
-      postedBy:      req.user.name,
-      postedByTitle: req.user.title || '',
-      mediaUrl:      req.file.path,
-      publicId:      req.file.filename,
-      mediaType,
-      caption:       req.body.caption || '',
-    });
-
-    console.log('✅ Post created:', post._id);
-    res.status(201).json(post);
-
-  } catch (err) {
-    // Proper error logging — shows the actual message not [object Object]
-    console.error('❌ Post upload error:', err.message);
-    console.error('❌ Full error:', JSON.stringify(err, null, 2));
-    res.status(500).json({ message: err.message || 'Upload failed' });
-  }
+// Turn a raw post into a small object for the browser:
+// counts instead of full id lists + "what did I react with".
+const shape = (p, uid) => {
+  const myReaction = REACTIONS.find((t) => (p[t] || []).includes(uid)) || null;
+  return {
+    _id:           p._id,
+    text:          p.text || p.caption || '', // old media posts had "caption"
+    postedBy:      p.postedBy,
+    postedByTitle: p.postedByTitle,
+    createdAt:     p.createdAt,
+    likes:         (p.likes || []).length,
+    loves:         (p.loves || []).length,
+    amens:         (p.amens || []).length,
+    views:         (p.views || []).length,
+    shares:        p.shares || 0,
+    myReaction,
+    viewed:        (p.views || []).includes(uid),
+  };
 };
 
-// GET /api/posts — all posts newest first
+// GET /api/posts?page=1&limit=20
 const getPosts = async (req, res) => {
-  try {
-    const posts = await Post.find({}).sort({ createdAt: -1 });
-    res.json(posts);
-  } catch (err) {
-    console.error('❌ Get posts error:', err.message);
-    res.status(500).json({ message: err.message });
-  }
+  const uid   = String(req.user.id);
+  const page  = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
+
+  const [posts, total] = await Promise.all([
+    Post.find({ text: { $exists: true, $ne: '' } })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    Post.countDocuments({ text: { $exists: true, $ne: '' } }),
+  ]);
+
+  res.json({
+    posts:   posts.map((p) => shape(p, uid)),
+    page,
+    total,
+    hasMore: page * limit < total,
+  });
 };
 
-// POST /api/posts/:id/view — mark viewed once per member
+// GET /api/posts/unviewed-count → { count }
+const unviewedCount = async (req, res) => {
+  const uid   = String(req.user.id);
+  const count = await Post.countDocuments({ text: { $exists: true, $ne: '' }, views: { $ne: uid } });
+  res.json({ count });
+};
+
+// POST /api/posts  (admin)  body: { text }
+const createPost = async (req, res) => {
+  const text = String(req.body.text || '').trim();
+  if (!text) throw httpError(400, 'Write something before posting.');
+  if (text.length > 1000) throw httpError(400, 'Posts can be at most 1000 characters.');
+
+  const post = await Post.create({
+    text,
+    authorId:      String(req.user.id),
+    postedBy:      req.user.name,
+    postedByTitle: req.user.title || '',
+  });
+
+  // Notify members in the background
+  sendPushToMembers(
+    `New post from ${post.postedBy}`,
+    text.length > 120 ? text.slice(0, 120) + '…' : text,
+    '/member-posts'
+  );
+
+  res.status(201).json(shape(post.toObject(), String(req.user.id)));
+};
+
+// POST /api/posts/:id/view
 const markViewed = async (req, res) => {
-  try {
-    const memberId = req.user.id;
-    const post = await Post.findByIdAndUpdate(
-      req.params.id,
-      { $addToSet: { views: memberId } },
-      { returnDocument: 'after' }
-    );
-    if (!post) return res.status(404).json({ message: 'Post not found' });
-    res.json({ views: post.views.length });
-  } catch (err) {
-    console.error('❌ Mark viewed error:', err.message);
-    res.status(500).json({ message: err.message });
-  }
+  const uid  = String(req.user.id);
+  const post = await Post.findByIdAndUpdate(
+    req.params.id,
+    { $addToSet: { views: uid } },
+    { returnDocument: 'after' }
+  ).lean();
+  if (!post) throw httpError(404, 'Post not found');
+  res.json({ views: post.views.length });
 };
 
-// POST /api/posts/:id/react — ONE reaction per user
+// POST /api/posts/:id/react   body: { type: 'likes' | 'loves' | 'amens' }
+// One reaction per user. Same reaction again removes it.
 const reactToPost = async (req, res) => {
-  try {
-    const memberId = req.user.id;
-    const { type } = req.body;
+  const uid  = String(req.user.id);
+  const type = req.body.type;
+  if (!REACTIONS.includes(type)) throw httpError(400, 'Invalid reaction type');
 
-    if (!['likes', 'loves', 'amens'].includes(type)) {
-      return res.status(400).json({ message: 'Invalid reaction type' });
-    }
+  const current = await Post.findById(req.params.id, { likes: 1, loves: 1, amens: 1 }).lean();
+  if (!current) throw httpError(404, 'Post not found');
 
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: 'Post not found' });
+  const already = (current[type] || []).includes(uid);
 
-    const allTypes     = ['likes', 'loves', 'amens'];
-    const existingType = allTypes.find((t) => post[t].includes(memberId));
-
-    if (existingType === type) {
-      // Same reaction — toggle off
-      post[type] = post[type].filter((id) => id !== memberId);
-    } else {
-      // Different or no reaction — remove old, add new
-      if (existingType) {
-        post[existingType] = post[existingType].filter((id) => id !== memberId);
-      }
-      post[type].push(memberId);
-    }
-
-    await post.save();
-
-    res.json({
-      likes: post.likes.length,
-      loves: post.loves.length,
-      amens: post.amens.length,
-      userReactions: {
-        liked:  post.likes.includes(memberId),
-        loved:  post.loves.includes(memberId),
-        amened: post.amens.includes(memberId),
-      },
-    });
-  } catch (err) {
-    console.error('❌ React error:', err.message);
-    res.status(500).json({ message: err.message });
+  // Remove the user from every reaction list, then add the new one (if not toggling off)
+  await Post.updateOne({ _id: req.params.id }, { $pull: { likes: uid, loves: uid, amens: uid } });
+  if (!already) {
+    await Post.updateOne({ _id: req.params.id }, { $addToSet: { [type]: uid } });
   }
+
+  const updated = await Post.findById(req.params.id, { likes: 1, loves: 1, amens: 1 }).lean();
+  res.json({
+    likes: updated.likes.length,
+    loves: updated.loves.length,
+    amens: updated.amens.length,
+    myReaction: already ? null : type,
+  });
 };
 
-// DELETE /api/posts/:id
+// POST /api/posts/:id/share → counts shares
+const sharePost = async (req, res) => {
+  const post = await Post.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { shares: 1 } },
+    { returnDocument: 'after' }
+  ).lean();
+  if (!post) throw httpError(404, 'Post not found');
+  res.json({ shares: post.shares });
+};
+
+// DELETE /api/posts/:id  (admin)
 const deletePost = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: 'Post not found' });
-
-    const resourceType = post.mediaType === 'video' ? 'video' : 'image';
-    await cloudinary.uploader.destroy(post.publicId, { resource_type: resourceType });
-    await Post.findByIdAndDelete(req.params.id);
-
-    res.json({ message: 'Post deleted successfully' });
-  } catch (err) {
-    console.error('❌ Delete post error:', err.message);
-    res.status(500).json({ message: err.message });
-  }
+  const post = await Post.findByIdAndDelete(req.params.id);
+  if (!post) throw httpError(404, 'Post not found');
+  res.json({ message: 'Post deleted' });
 };
 
-module.exports = { createPost, getPosts, markViewed, reactToPost, deletePost };
+module.exports = {
+  getPosts, unviewedCount, createPost, markViewed, reactToPost, sharePost, deletePost,
+};

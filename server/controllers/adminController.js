@@ -1,129 +1,89 @@
 const Member          = require('../models/Member');
+const Registration    = require('../models/Registration');
 const BirthdaySetting = require('../models/BirthdaySetting');
+const { CATEGORIES }  = require('../models/Member');
+const { findTodayBirthdays } = require('../utils/birthdayCron');
+const { httpError, pick, escapeRegex, normalisePhone } = require('../utils/validate');
 
-// GET /api/admin/stats
+const DEFAULT_TEMPLATE =
+  'Happy Birthday {name}! 🎉🎂 The Golden City Church family celebrates you today. ' +
+  'May God bless you abundantly and grant you many more glorious years. We love you! 🙏✝️';
+
+// GET /api/admin/stats — group counts (all counts run in parallel)
 const getStats = async (req, res) => {
-  try {
-    const categories = [
-      'men', 'women', 'youths', 'men-excos', 'women-excos',
-      'youth-excos', 'workers', 'ffcc', 'church-committee', 'choir',
-    ];
+  const counts = await Promise.all(CATEGORIES.map((c) => Member.countDocuments({ categories: c })));
+  const stats  = Object.fromEntries(CATEGORIES.map((c, i) => [c, counts[i]]));
+  stats.totalMembers = await Member.countDocuments({});
 
-    const stats = {};
-
-    // Count how many members belong to each group
-    for (const cat of categories) {
-      stats[cat] = await Member.countDocuments({ categories: cat });
-    }
-
-    // ✅ Total UNIQUE registered people — one person = 1, no matter how many groups
-    stats.totalMembers = await Member.countDocuments({});
-
-    res.json(stats);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  // Admins also see how many requests are waiting
+  if (req.user?.role === 'admin') {
+    stats.pendingRegistrations = await Registration.countDocuments({ status: 'pending' });
   }
+  res.json(stats);
 };
 
 // GET /api/admin/members
 const getMembers = async (req, res) => {
-  try {
-    const members = await Member.find({}).sort({ createdAt: -1 });
-    res.json(members);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.json(await Member.find({}).sort({ createdAt: -1 }).lean());
+};
+
+// GET /api/admin/members/count?groups=men,choir → { count } (each person once)
+const countMembers = async (req, res) => {
+  const groups = String(req.query.groups || '').split(',').map((g) => g.trim()).filter(Boolean);
+  const filter = groups.length === 0 || groups.includes('all') ? {} : { categories: { $in: groups } };
+  res.json({ count: await Member.countDocuments(filter) });
 };
 
 // GET /api/admin/members/search?q=
 const searchMembers = async (req, res) => {
-  try {
-    const q = req.query.q || '';
-    const members = await Member.find({
-      $or: [
-        { name:  { $regex: q, $options: 'i' } },
-        { phone: { $regex: q, $options: 'i' } },
-      ],
-    }).limit(20);
-    res.json(members);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const q = String(req.query.q || '').trim();
+  if (!q) return res.json([]);
+  const rx = { $regex: escapeRegex(q), $options: 'i' };
+  res.json(await Member.find({ $or: [{ name: rx }, { phone: rx }] }).limit(20).lean());
 };
 
-// PUT /api/admin/members/:id
+// PUT /api/admin/members/:id — only these fields can be changed
 const updateMember = async (req, res) => {
-  try {
-    const updated = await Member.findByIdAndUpdate(
-      req.params.id, req.body, { new: true }
-    );
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const updates = pick(req.body, ['name', 'phone', 'dateOfBirth', 'categories']);
+  if (updates.phone) updates.phone = normalisePhone(updates.phone);
+  const updated = await Member.findByIdAndUpdate(req.params.id, updates, {
+    returnDocument: 'after', runValidators: true,
+  }).lean();
+  if (!updated) throw httpError(404, 'Member not found');
+  res.json(updated);
 };
 
 // DELETE /api/admin/members/:id
 const deleteMember = async (req, res) => {
-  try {
-    await Member.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Member deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const deleted = await Member.findByIdAndDelete(req.params.id);
+  if (!deleted) throw httpError(404, 'Member not found');
+  res.json({ message: 'Member deleted successfully' });
 };
 
 // GET /api/admin/birthday-settings
 const getBirthdaySettings = async (req, res) => {
-  try {
-    let settings = await BirthdaySetting.findOne({});
-    if (!settings) {
-      settings = await BirthdaySetting.create({
-        template: "Happy Birthday {name}! 🎉🎂 The Golden City Church family celebrates you today. May God bless you abundantly and grant you many more glorious years. We love you! 🙏✝️",
-        sendTime: '08:00',
-        enabled: true,
-      });
-    }
-    res.json(settings);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  let settings = await BirthdaySetting.findOne({}).lean();
+  if (!settings) {
+    settings = (await BirthdaySetting.create({ template: DEFAULT_TEMPLATE, sendTime: '08:00', enabled: true })).toObject();
   }
+  res.json(settings);
 };
 
 // PUT /api/admin/birthday-settings
 const updateBirthdaySettings = async (req, res) => {
-  try {
-    let settings = await BirthdaySetting.findOne({});
-    if (!settings) {
-      settings = await BirthdaySetting.create(req.body);
-    } else {
-      settings = await BirthdaySetting.findOneAndUpdate({}, req.body, { new: true });
-    }
-    res.json(settings);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const updates  = pick(req.body, ['template', 'sendTime', 'enabled']);
+  const settings = await BirthdaySetting.findOneAndUpdate({}, updates, {
+    returnDocument: 'after', upsert: true, setDefaultsOnInsert: true,
+  }).lean();
+  res.json(settings);
 };
 
 // GET /api/admin/birthday-today
 const getTodayBirthdays = async (req, res) => {
-  try {
-    const today = new Date();
-    const mm    = String(today.getMonth() + 1).padStart(2, '0');
-    const dd    = String(today.getDate()).padStart(2, '0');
-    const members = await Member.find({});
-    const birthdays = members.filter((m) => {
-      if (!m.dateOfBirth) return false;
-      const parts = m.dateOfBirth.split('-');
-      return parts[1] === mm && parts[2] === dd;
-    });
-    res.json(birthdays);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.json(await findTodayBirthdays());
 };
 
 module.exports = {
-  getStats, getMembers, searchMembers, updateMember, deleteMember,
+  getStats, getMembers, countMembers, searchMembers, updateMember, deleteMember,
   getBirthdaySettings, updateBirthdaySettings, getTodayBirthdays,
 };

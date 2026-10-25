@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const SelectiveMessage = () => {
   const { user } = useAuth();
@@ -65,7 +65,7 @@ const SelectiveMessage = () => {
     }
   };
 
-  if (sending) return <PageLoader />;
+  if (sending) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -213,9 +213,6 @@ const SelectiveMessage = () => {
         </div>
       </div>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,500&display=swap');
-      `}</style>
     </div>
   );
 };

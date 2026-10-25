@@ -1,24 +1,21 @@
 const express = require('express');
 const router  = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-const {
-  getStats, getMembers, searchMembers, updateMember, deleteMember,
-  getBirthdaySettings, updateBirthdaySettings, getTodayBirthdays,
-} = require('../controllers/adminController');
+const c = require('../controllers/adminController');
 
-// ✅ This route only needs login (not admin role)
-// Members can see stats on their dashboard
-router.get('/stats', protect, getStats);
+// Members can see group stats on their dashboard (login only)
+router.get('/stats', protect, c.getStats);
 
-// Everything below requires admin role
+// Everything below is admin only
 router.use(protect, adminOnly);
 
-router.get('/members',           getMembers);
-router.get('/members/search',    searchMembers);
-router.put('/members/:id',       updateMember);
-router.delete('/members/:id',    deleteMember);
-router.get('/birthday-settings', getBirthdaySettings);
-router.put('/birthday-settings', updateBirthdaySettings);
-router.get('/birthday-today',    getTodayBirthdays);
+router.get('/members',           c.getMembers);
+router.get('/members/count',     c.countMembers);
+router.get('/members/search',    c.searchMembers);
+router.put('/members/:id',       c.updateMember);
+router.delete('/members/:id',    c.deleteMember);
+router.get('/birthday-settings', c.getBirthdaySettings);
+router.put('/birthday-settings', c.updateBirthdaySettings);
+router.get('/birthday-today',    c.getTodayBirthdays);
 
 module.exports = router;

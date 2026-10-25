@@ -2,13 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth scrolling globally */
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
-/* Remove default button outline, keep accessible focus ring */
-button:focus-visible {
+body {
+  @apply font-sans text-gray-900 bg-white antialiased;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
   outline: 2px solid #D4AF37;
   outline-offset: 2px;
+}
+
+/* Respect "reduce motion" phone settings */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  .gc-input {
+    @apply w-full px-4 py-3.5 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-medium
+           placeholder-gray-400 focus:outline-none focus:border-amber-500 transition-colors;
+  }
+  .gc-label {
+    @apply block text-sm font-semibold text-gray-800 mb-1.5;
+  }
+  .gc-btn-gold {
+    @apply w-full py-3.5 rounded-xl text-white font-semibold text-base shadow-lg transition-all duration-200
+           hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #92650A 0%, #D4AF37 50%, #92650A 100%);
+  }
 }

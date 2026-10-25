@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const CATEGORIES = [
   { id: 'men',              label: 'Men',                      emoji: '👨' },
@@ -103,7 +103,7 @@ const GroupMessage = () => {
       setSending(false); }
   };
 
-  if (sending) return <PageLoader />;
+  if (sending) return <LoadingScreen />;
 
   const charCount = message.length;
   const smsUnits  = Math.ceil(charCount / 160) || 1;
@@ -275,7 +275,6 @@ const GroupMessage = () => {
         </div>
       </div>
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,500&display=swap');`}</style>
     </div>
   );
 };

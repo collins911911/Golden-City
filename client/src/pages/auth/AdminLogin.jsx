@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../utils/axios';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const AdminLogin = () => {
     }
   };
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4 relative overflow-hidden">
@@ -53,12 +53,10 @@ const AdminLogin = () => {
           </div>
           <h1
             className="text-xl font-bold text-yellow-800 uppercase tracking-[0.2em]"
-            style={{ fontFamily: "'Cinzel', serif" }}
           >
             Admin Access
           </h1>
-          <p className="text-xs text-yellow-500 tracking-widest mt-0.5 uppercase"
-            style={{ fontFamily: "'Cinzel', serif" }}>
+          <p className="text-xs text-yellow-500 tracking-widest mt-0.5 uppercase">
             Golden City Church
           </p>
         </div>
@@ -73,8 +71,7 @@ const AdminLogin = () => {
 
           {/* Username */}
           <div className="mb-4">
-            <label className="block text-xs font-bold text-yellow-700 uppercase tracking-widest mb-2"
-              style={{ fontFamily: "'Cinzel', serif" }}>
+            <label className="block text-xs font-bold text-yellow-700 uppercase tracking-widest mb-2">
               Username
             </label>
             <input
@@ -88,8 +85,7 @@ const AdminLogin = () => {
 
           {/* Password */}
           <div className="mb-4">
-            <label className="block text-xs font-bold text-yellow-700 uppercase tracking-widest mb-2"
-              style={{ fontFamily: "'Cinzel', serif" }}>
+            <label className="block text-xs font-bold text-yellow-700 uppercase tracking-widest mb-2">
               Password
             </label>
             <div className="relative">
@@ -123,8 +119,7 @@ const AdminLogin = () => {
 
           {/* Passcode */}
           <div className="mb-8">
-            <label className="block text-xs font-bold text-yellow-700 uppercase tracking-widest mb-2"
-              style={{ fontFamily: "'Cinzel', serif" }}>
+            <label className="block text-xs font-bold text-yellow-700 uppercase tracking-widest mb-2">
               Admin Passcode
             </label>
             <div className="relative">
@@ -160,21 +155,16 @@ const AdminLogin = () => {
           <button
             onClick={handleLogin}
             className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-700 text-white font-bold uppercase tracking-widest text-sm shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-200"
-            style={{ fontFamily: "'Cinzel', serif" }}
           >
             Enter Dashboard
           </button>
         </div>
 
-        <p className="text-center text-xs text-yellow-300 mt-6 tracking-widest uppercase"
-          style={{ fontFamily: "'Cinzel', serif" }}>
+        <p className="text-center text-xs text-yellow-300 mt-6 tracking-widest uppercase">
           Authorised Personnel Only
         </p>
       </div>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap');
-      `}</style>
     </div>
   );
 };

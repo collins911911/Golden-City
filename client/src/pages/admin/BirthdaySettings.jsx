@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const BirthdaySettings = () => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const BirthdaySettings = () => {
   const previewMessage = settings.template.replace(/{name}/gi, 'Brother Emmanuel');
   const smsUnits = Math.ceil(charCount / 160) || 1;
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -257,7 +257,6 @@ const BirthdaySettings = () => {
         </div>
       </div>
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&display=swap');`}</style>
     </div>
   );
 };

@@ -1,29 +1,19 @@
-const express    = require('express');
-const router     = express.Router();
+const express = require('express');
+const router  = express.Router();
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-const { upload } = require('../middleware/cloudinary');
-const {
-  createPost,
-  getPosts,
-  markViewed,
-  reactToPost,
-  deletePost,
-} = require('../controllers/postController');
+const c = require('../controllers/postController');
 
-// All routes require login
+// All post routes need login
 router.use(protect);
 
-// GET all posts — admin and member
-router.get('/', getPosts);
-
-// POST react to a post
-router.post('/:id/react', reactToPost);
-
-// POST mark as viewed
-router.post('/:id/view', markViewed);
+router.get('/',               c.getPosts);        // ?page=1&limit=20
+router.get('/unviewed-count', c.unviewedCount);
+router.post('/:id/react',     c.reactToPost);
+router.post('/:id/view',      c.markViewed);
+router.post('/:id/share',     c.sharePost);
 
 // Admin only
-router.post('/',      adminOnly, upload.single('media'), createPost);
-router.delete('/:id', adminOnly, deletePost);
+router.post('/',      adminOnly, c.createPost);
+router.delete('/:id', adminOnly, c.deletePost);
 
 module.exports = router;

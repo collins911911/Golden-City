@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
+import LiveClock from '../../components/LiveClock';
+import usePushNotifications from '../../hooks/usePushNotifications';
 
 const CATEGORIES = [
   { id: 'men',              label: 'Men',                      emoji: '👨' },
@@ -30,34 +32,28 @@ const AdminDashboard = () => {
   const [stats, setStats]     = useState({});
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(false);
-  const [time, setTime]       = useState(new Date());
   const [postCount, setPostCount] = useState(0);
+  usePushNotifications(); // admins get "new registration" alerts
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const [statsRes, postsRes] = await Promise.all([
           axios.get('/admin/stats'),
-          axios.get('/posts'),
+          axios.get('/posts?limit=1'),
         ]);
         setStats(statsRes.data);
-        setPostCount(postsRes.data.length);
-      } catch { }
+        setPostCount(postsRes.data.total || 0);
+      } catch { /* dashboard still shows */ }
       finally { setLoading(false); setTimeout(() => setVisible(true), 80); }
     };
     fetchAll();
-    const clock = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(clock);
   }, []);
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   const totalMembers = stats.totalMembers || 0;
 
-  const formatTime = (d) =>
-    d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const formatDate = (d) =>
-    d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -111,11 +107,9 @@ const AdminDashboard = () => {
           {/* Right */}
           <div className={`flex flex-col items-center md:items-end gap-3 transition-all duration-1000 delay-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="bg-white/10 backdrop-blur border border-yellow-200/30 rounded-2xl px-6 py-4 text-center">
-              <p className="text-2xl font-bold text-white tabular-nums tracking-widest"
-                style={{ fontFamily: "'Cinzel', serif" }}>
-                {formatTime(time)}
-              </p>
-              <p className="text-yellow-200 text-xs tracking-widest mt-0.5">{formatDate(time)}</p>
+              <LiveClock
+                timeClass="font-display text-2xl font-bold text-white tabular-nums tracking-widest"
+                dateClass="text-yellow-200 text-xs tracking-widest mt-0.5" />
             </div>
             <div className="flex items-center gap-3 bg-white/15 backdrop-blur border border-yellow-200/40 rounded-2xl px-6 py-3"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -204,7 +198,25 @@ const AdminDashboard = () => {
         </div>
 
         {/* Bottom actions */}
-        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 transition-all duration-700 delay-600 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-700 delay-600 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <button onClick={() => navigate('/admin-registrations')}
+            className="group relative flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl px-5 py-4 shadow hover:shadow-lg hover:border-green-400 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
+            <span className="text-2xl">📝</span>
+            <div className="text-left">
+              <p className="text-xs font-bold text-green-900 uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Registrations</p>
+              <p className="text-xs text-green-700 mt-0.5">
+                {stats.pendingRegistrations > 0
+                  ? `${stats.pendingRegistrations} waiting for approval`
+                  : 'No pending requests'}
+              </p>
+            </div>
+            {stats.pendingRegistrations > 0 && (
+              <span className="absolute -top-2 -right-2 min-w-[24px] h-6 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+                {stats.pendingRegistrations}
+              </span>
+            )}
+          </button>
+
           <button onClick={() => navigate('/admin-members')}
             className="group flex items-center gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl px-5 py-4 shadow hover:shadow-lg hover:border-amber-400 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
             <span className="text-2xl">👥</span>
@@ -226,16 +238,15 @@ const AdminDashboard = () => {
           {/* ── NEW: Posts quick action ── */}
           <button onClick={() => navigate('/admin-posts')}
             className="group flex items-center gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl px-5 py-4 shadow hover:shadow-lg hover:border-amber-400 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
-            <span className="text-2xl">🎬</span>
+            <span className="text-2xl">✍️</span>
             <div className="text-left">
               <p className="text-xs font-bold text-amber-900 uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Posts</p>
-              <p className="text-xs text-amber-500 mt-0.5">{postCount} post{postCount !== 1 ? 's' : ''} · upload photos & videos</p>
+              <p className="text-xs text-amber-500 mt-0.5">{postCount} post{postCount !== 1 ? 's' : ''} · write & share</p>
             </div>
           </button>
         </div>
       </div>
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap');`}</style>
     </div>
   );
 };

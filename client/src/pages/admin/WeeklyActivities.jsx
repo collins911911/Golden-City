@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DAY_COLORS = {
@@ -98,7 +98,7 @@ const WeeklyActivities = () => {
     return acc;
   }, {});
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -250,7 +250,6 @@ const WeeklyActivities = () => {
           ))}
         </div>
       </div>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&display=swap');`}</style>
     </div>
   );
 };

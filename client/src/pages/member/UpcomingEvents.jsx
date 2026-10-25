@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -50,7 +50,7 @@ const UpcomingEvents = () => {
 
   const isPast = (dateStr) => new Date(dateStr) < today;
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#FDF8F8]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -200,7 +200,6 @@ const UpcomingEvents = () => {
         </div>
       </div>
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap');`}</style>
     </div>
   );
 };

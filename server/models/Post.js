@@ -1,24 +1,22 @@
 const mongoose = require('mongoose');
 
+// A text post ("tweet") written by an admin.
+// No images or videos, so no Cloudinary needed.
 const postSchema = new mongoose.Schema({
-  // Who posted it
-  postedBy:     { type: String, required: true },
+  text:          { type: String, required: true, trim: true, maxlength: 1000 },
+  authorId:      { type: String, default: '' },
+  postedBy:      { type: String, required: true },
   postedByTitle: { type: String, default: '' },
 
-  // Media
-  mediaUrl:     { type: String, required: true }, // Cloudinary URL
-  mediaType:    { type: String, enum: ['image', 'video'], required: true },
-  publicId:     { type: String, required: true }, // Cloudinary public_id for deletion
-  caption:      { type: String, default: '' },
-
-  // Reactions — store array of member IDs per reaction type
-  likes:  [{ type: String }], // array of member IDs
+  // Reactions — arrays of user ids (one reaction per user)
+  likes:  [{ type: String }],
   loves:  [{ type: String }],
   amens:  [{ type: String }],
 
-  // Views — array of member IDs who have viewed
-  views: [{ type: String }],
-
+  views:  [{ type: String }], // user ids who have seen it
+  shares: { type: Number, default: 0 },
 }, { timestamps: true });
+
+postSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Post', postSchema);

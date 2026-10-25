@@ -128,9 +128,6 @@ const Landing = () => {
         </p>
       </footer>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap');
-      `}</style>
     </div>
   );
 };

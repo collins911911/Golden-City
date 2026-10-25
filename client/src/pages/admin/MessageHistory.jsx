@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
 
 const STATUS_COLOR = {
   delivered: 'bg-green-100 text-green-700 border-green-200',
@@ -46,7 +46,7 @@ const MessageHistory = () => {
   const deliveredCount = (msg) => msg.deliveryStatus?.filter((s) => s.status === 'delivered').length || 0;
   const failedCount    = (msg) => msg.deliveryStatus?.filter((s) => s.status === 'failed').length || 0;
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   return (
     <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -146,7 +146,6 @@ const MessageHistory = () => {
           })}
         </div>
       </div>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&display=swap');`}</style>
     </div>
   );
 };

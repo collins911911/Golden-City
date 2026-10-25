@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../utils/axios';
 import Navbar from '../../components/Navbar';
-import PageLoader from '../../components/PageLoader';
+import LoadingScreen from '../../components/LoadingScreen';
+import LiveClock from '../../components/LiveClock';
+import usePushNotifications from '../../hooks/usePushNotifications';
 import PostCard from '../../components/PostCard';
 
 const CATEGORIES = [
@@ -28,48 +30,39 @@ const MemberDashboard = () => {
   const [unviewedCount, setUnviewedCount] = useState(0);
   const [loading, setLoading]       = useState(true);
   const [visible, setVisible]       = useState(false);
-  const [time, setTime]             = useState(new Date());
-  const [greeting, setGreeting]     = useState('');
+  const hour     = new Date().getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  usePushNotifications(); // new posts & notices
 
   useEffect(() => {
-    const h = new Date().getHours();
-    if (h < 12)      setGreeting('Good Morning');
-    else if (h < 17) setGreeting('Good Afternoon');
-    else             setGreeting('Good Evening');
-
     const fetchData = async () => {
       try {
-        const [noticesRes, postsRes] = await Promise.all([
+        // All four requests run at the same time
+        const [noticesRes, postsRes, unseenRes, statsRes] = await Promise.allSettled([
           axios.get('/notices'),
-          axios.get('/posts'),
+          axios.get('/posts?limit=1'),
+          axios.get('/posts/unviewed-count'),
+          axios.get('/admin/stats'),
         ]);
-        setNotices(noticesRes.data.slice(0, 2));
-        const posts = postsRes.data;
-        if (posts.length > 0) setLatestPost(posts[0]);
-        setUnviewedCount(posts.filter((p) => !p.views?.includes(user?.id)).length);
-
-        try {
-          const statsRes = await axios.get('/admin/stats');
-          setStats(statsRes.data);
-        } catch { setStats({}); }
+        if (noticesRes.status === 'fulfilled') setNotices(noticesRes.value.data.slice(0, 2));
+        if (postsRes.status === 'fulfilled') setLatestPost(postsRes.value.data.posts[0] || null);
+        if (unseenRes.status === 'fulfilled') setUnviewedCount(unseenRes.value.data.count);
+        setStats(statsRes.status === 'fulfilled' ? statsRes.value.data : {});
 
       } catch { /* silent */ }
       finally { setLoading(false); setTimeout(() => setVisible(true), 80); }
     };
     fetchData();
-
-    const clock = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(clock);
   }, [user?.id]);
 
-  if (loading) return <PageLoader />;
+  if (loading) return <LoadingScreen />;
 
   const totalMembers   = stats.totalMembers || 0;
   const userCategories = user?.categories || [];
 
   return (
     <div className="min-h-screen bg-[#FDF8F8]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-      <Navbar unviewedPosts={unviewedCount} />
+      <Navbar />
 
       {/* ── Hero Banner ── */}
       <div className="relative overflow-hidden" style={{
@@ -123,13 +116,10 @@ const MemberDashboard = () => {
           {/* Right — clock + total */}
           <div className={`flex flex-col items-center md:items-end gap-3 transition-all duration-1000 delay-300 ${visible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="bg-white/10 backdrop-blur border border-white/20 rounded-2xl px-6 py-4 text-center">
-              <p className="text-2xl font-bold text-white tabular-nums tracking-widest"
-                style={{ fontFamily: "'Cinzel', serif" }}>
-                {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </p>
-              <p className="text-red-200 text-xs tracking-wide mt-0.5">
-                {time.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-              </p>
+              <LiveClock
+                timeClass="font-display text-2xl font-bold text-white tabular-nums tracking-widest"
+                dateClass="text-red-200 text-xs tracking-wide mt-0.5"
+                dateOptions={{ weekday: 'long', month: 'long', day: 'numeric' }} />
             </div>
             <div className="flex items-center gap-3 bg-white/10 backdrop-blur border border-white/20 rounded-2xl px-5 py-3">
               <span className="text-2xl">⛪</span>
@@ -201,11 +191,7 @@ const MemberDashboard = () => {
             </div>
 
             {/* ✅ Uses the exact same PostCard — no duplicate code */}
-            <PostCard
-              post={latestPost}
-              currentUserId={user?.id}
-              isAdmin={false}
-            />
+            <PostCard post={latestPost} />
           </div>
         )}
 
@@ -279,7 +265,6 @@ const MemberDashboard = () => {
         )}
       </div>
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap');`}</style>
     </div>
   );
 };

@@ -1,343 +1,229 @@
 import { useState, useRef, useEffect } from 'react';
-import axios from '../utils/axios';
+import axios, { errorMessage } from '../utils/axios';
+import { sharePostAsImage } from '../utils/shareImage';
+import { refreshBadge } from '../utils/badge';
 
-// ── Beautiful SVG Icons ───────────────────────────────────────
-
-const ThumbIcon = ({ filled, animating }) => (
-  <svg viewBox="0 0 24 24" className={`w-5 h-5 transition-all duration-300 ${animating ? 'scale-125' : 'scale-100'}`} fill="none">
-    <path
-      d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3m0 11V11m0 11h10a2 2 0 002-2v-1.5M7 11l5-9 .5 4.5H17a2 2 0 012 2l-1.5 6a2 2 0 01-2 2H7"
-      stroke={filled ? '#2563eb' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill={filled ? '#dbeafe' : 'none'}
-    />
+// ── Icons ─────────────────────────────────────────────────────
+const ThumbIcon = ({ filled }) => (
+  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden="true">
+    <path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3m0 11V11m0 11h10a2 2 0 002-2v-1.5M7 11l5-9 .5 4.5H17a2 2 0 012 2l-1.5 6a2 2 0 01-2 2H7"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.15 : 0} />
   </svg>
 );
 
-const HeartIcon = ({ filled, animating }) => (
-  <svg viewBox="0 0 24 24" className={`w-5 h-5 transition-all duration-300 ${animating ? 'scale-125' : 'scale-100'}`} fill="none">
-    <path
-      d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
-      stroke={filled ? '#dc2626' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill={filled ? '#fee2e2' : 'none'}
-    />
+const HeartIcon = ({ filled }) => (
+  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" aria-hidden="true">
+    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      fill={filled ? 'currentColor' : 'none'} fillOpacity={filled ? 0.2 : 0} />
   </svg>
 );
 
-const AmenIcon = ({ filled, animating }) => (
-  <svg viewBox="0 0 24 24" className={`w-5 h-5 transition-all duration-300 ${animating ? 'scale-125' : 'scale-100'}`} fill="none">
-    {/* Left hand */}
-    <path
-      d="M6 15V9.5C6 8.67 6.67 8 7.5 8S9 8.67 9 9.5V13"
-      stroke={filled ? '#111827' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-    />
-    {/* Right hand */}
-    <path
-      d="M18 15V9.5C18 8.67 17.33 8 16.5 8S15 8.67 15 9.5V13"
-      stroke={filled ? '#111827' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-    />
-    {/* Palms joined */}
-    <path
-      d="M9 13V7.5C9 6.67 9.67 6 10.5 6S12 6.67 12 7.5M15 13V7.5C15 6.67 14.33 6 13.5 6S12 6.67 12 7.5V6"
-      stroke={filled ? '#111827' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-    />
-    {/* Bottom cup / base */}
-    <path
-      d="M6 15C6 18 8 20 12 20C16 20 18 18 18 15"
-      stroke={filled ? '#111827' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-      fill={filled ? '#f3f4f6' : 'none'}
-    />
-    {/* Center line joining hands */}
-    <path
-      d="M12 6V4"
-      stroke={filled ? '#111827' : '#9ca3af'}
-      strokeWidth={filled ? '2' : '1.5'}
-      strokeLinecap="round"
-    />
+const PrayIcon = () => <span className="text-lg leading-none" aria-hidden="true">🙏</span>;
+
+const ShareIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+    <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" /><line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
   </svg>
 );
 
-// ── Floating +1 animation ─────────────────────────────────────
-const FloatBadge = ({ show, color }) => (
-  <span className={`absolute -top-5 left-1/2 -translate-x-1/2 text-xs font-black pointer-events-none transition-all duration-500 ${
-    show ? 'opacity-100 -translate-y-2' : 'opacity-0 translate-y-0'
-  } ${color}`}>
-    +1
-  </span>
+const EyeIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" /><circle cx="12" cy="12" r="3" />
+  </svg>
 );
 
-// ── Main PostCard ─────────────────────────────────────────────
-const PostCard = ({ post, currentUserId, isAdmin, onDelete }) => {
-  const videoRef = useRef(null);
-  const cardRef  = useRef(null);
-  const timerRef = useRef(null);
+const REACTIONS = [
+  { type: 'likes', label: 'Like',  Icon: ThumbIcon, on: 'bg-blue-600 text-white',  idle: 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' },
+  { type: 'loves', label: 'Love',  Icon: HeartIcon, on: 'bg-red-600 text-white',   idle: 'text-gray-600 hover:bg-red-50 hover:text-red-600' },
+  { type: 'amens', label: 'Amen',  Icon: PrayIcon,  on: 'bg-gray-900 text-white',  idle: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' },
+];
 
-  const getCurrentReaction = () => {
-    if (post.likes?.includes(currentUserId)) return 'likes';
-    if (post.loves?.includes(currentUserId)) return 'loves';
-    if (post.amens?.includes(currentUserId)) return 'amens';
-    return null;
+// "2m", "3h", "Mon 4", "12 Oct 2025"
+const timeAgo = (date) => {
+  const d    = new Date(date);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60)     return 'just now';
+  if (diff < 3600)   return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400)  return `${Math.floor(diff / 3600)}h`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const PostCard = ({ post, isAdmin = false, onDelete }) => {
+  const cardRef = useRef(null);
+
+  const [counts, setCounts]   = useState({ likes: post.likes || 0, loves: post.loves || 0, amens: post.amens || 0 });
+  const [mine, setMine]       = useState(post.myReaction || null);
+  const [views, setViews]     = useState(post.views || 0);
+  const [shares, setShares]   = useState(post.shares || 0);
+  const [busy, setBusy]       = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [notice, setNotice]   = useState(null); // { type: 'error' | 'ok', text }
+
+  const flash = (type, text) => {
+    setNotice({ type, text });
+    setTimeout(() => setNotice(null), 3500);
   };
 
-  const [reactions, setReactions] = useState({
-    likes: post.likes?.length || 0,
-    loves: post.loves?.length || 0,
-    amens: post.amens?.length || 0,
-  });
-  const [myReaction, setMyReaction]     = useState(getCurrentReaction());
-  const [viewCount, setViewCount]       = useState(post.views?.length || 0);
-  const [viewCounted, setViewCounted]   = useState(post.views?.includes(currentUserId) || false);
-  const [reacting, setReacting]         = useState(false);
-  const [deleting, setDeleting]         = useState(false);
-  const [animating, setAnimating]       = useState(null); // which button is animating
-  const [floatShow, setFloatShow]       = useState(null); // which +1 to show
-
-  // ── Intersection observer ─────────────────────────────────
+  // Count a view once the post has been on screen for 1.5 seconds
   useEffect(() => {
+    if (post.viewed || !cardRef.current) return;
+    let timer;
+    let done = false;
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        if (videoRef.current) videoRef.current.play().catch(() => {});
-        if (!viewCounted) {
-          timerRef.current = setTimeout(async () => {
-            try {
-              const res = await axios.post(`/posts/${post._id}/view`);
-              setViewCount(res.data.views);
-              setViewCounted(true);
-            } catch { /* silent */ }
-          }, 2000);
-        }
+      if (entry.isIntersecting && !done) {
+        timer = setTimeout(async () => {
+          done = true;
+          observer.disconnect();
+          try {
+            const res = await axios.post(`/posts/${post._id}/view`);
+            setViews(res.data.views);
+            refreshBadge();
+          } catch { /* a missed view is not important */ }
+        }, 1500);
       } else {
-        if (videoRef.current) videoRef.current.pause();
-        if (timerRef.current) clearTimeout(timerRef.current);
+        clearTimeout(timer);
       }
-    }, { threshold: 0.5 });
+    }, { threshold: 0.6 });
+    observer.observe(cardRef.current);
+    return () => { observer.disconnect(); clearTimeout(timer); };
+  }, [post._id, post.viewed]);
 
-    if (cardRef.current) observer.observe(cardRef.current);
-    return () => { observer.disconnect(); if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [post._id, viewCounted]);
+  const react = async (type) => {
+    if (busy) return;
+    setBusy(true);
 
-  // ── React handler ─────────────────────────────────────────
-  const handleReact = async (type) => {
-    if (reacting) return;
-    setReacting(true);
-
-    // Trigger animation
-    setAnimating(type);
-    setTimeout(() => setAnimating(null), 400);
-
-    // Show +1 float only if adding (not removing)
-    const isRemoving = myReaction === type;
-    if (!isRemoving) {
-      setFloatShow(type);
-      setTimeout(() => setFloatShow(null), 800);
-    }
+    // Update the screen instantly, fix it up when the server answers
+    const before   = { counts, mine };
+    const removing = mine === type;
+    const next = { ...counts };
+    if (mine) next[mine] = Math.max(0, next[mine] - 1);
+    if (!removing) next[type] += 1;
+    setCounts(next);
+    setMine(removing ? null : type);
+    if (!removing && navigator.vibrate) navigator.vibrate(15);
 
     try {
       const res = await axios.post(`/posts/${post._id}/react`, { type });
-      setReactions({ likes: res.data.likes, loves: res.data.loves, amens: res.data.amens });
-      setMyReaction(
-        res.data.userReactions.liked  ? 'likes'
-        : res.data.userReactions.loved  ? 'loves'
-        : res.data.userReactions.amened ? 'amens'
-        : null
-      );
-    } catch { /* silent */ }
-    finally { setReacting(false); }
+      setCounts({ likes: res.data.likes, loves: res.data.loves, amens: res.data.amens });
+      setMine(res.data.myReaction);
+    } catch (err) {
+      setCounts(before.counts);
+      setMine(before.mine);
+      flash('error', errorMessage(err, 'Could not save your reaction.'));
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Delete this post?')) return;
+  const share = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const result = await sharePostAsImage({ ...post });
+      if (result !== 'cancelled') {
+        axios.post(`/posts/${post._id}/share`).then((r) => setShares(r.data.shares)).catch(() => {});
+        if (result === 'downloaded') flash('ok', 'Image saved — you can now post it anywhere.');
+      }
+    } catch {
+      flash('error', 'Could not create the image. Please try again.');
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const remove = async () => {
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
     setDeleting(true);
     try {
       await axios.delete(`/posts/${post._id}`);
-      if (onDelete) onDelete(post._id);
-    } catch { setDeleting(false); }
+      onDelete?.(post._id);
+    } catch (err) {
+      setDeleting(false);
+      flash('error', errorMessage(err, 'Could not delete the post.'));
+    }
   };
 
-  const formatDate = (d) => new Date(d).toLocaleDateString('en-US', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
-
-  const totalReactions = reactions.likes + reactions.loves + reactions.amens;
+  const total = counts.likes + counts.loves + counts.amens;
 
   return (
-    <div ref={cardRef}
-      className="bg-white rounded-3xl border border-amber-100 shadow-lg overflow-hidden mb-6 hover:shadow-xl transition-all duration-300">
+    <article ref={cardRef}
+      className={`bg-white rounded-2xl border border-amber-100 shadow-sm hover:shadow-md transition-shadow mb-4 ${deleting ? 'opacity-50' : ''}`}>
 
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-amber-50">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white font-black text-base shadow-md"
-            style={{ fontFamily: "'Cinzel', serif" }}>
-            {post.postedBy?.charAt(0).toUpperCase()}
+      {/* Header */}
+      <header className="flex items-start gap-3 px-5 pt-5">
+        <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center text-white font-bold text-base shadow">
+          {post.postedBy?.charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-semibold text-gray-900 truncate">{post.postedBy}</span>
+            <svg viewBox="0 0 24 24" className="w-4 h-4 text-amber-500" fill="currentColor" aria-label="Church admin">
+              <path d="M12 2l2.4 2.2 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 22l-2.4-2.2-3.2.4-.9-3.1-2.9-1.5 1-3.1-1-3.1 2.9-1.5.9-3.1 3.2.4z" />
+              <path d="M8.5 12.5l2.2 2.2 4.8-4.8" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" />
+            </svg>
+            <span className="text-gray-400 text-sm">· {timeAgo(post.createdAt)}</span>
           </div>
-          <div>
-            <p className="font-black text-amber-900 text-sm tracking-wide" style={{ fontFamily: "'Cinzel', serif" }}>
-              {post.postedBy}
-            </p>
-            {post.postedByTitle && <p className="text-amber-400 text-xs font-medium">{post.postedByTitle}</p>}
-            <p className="text-amber-300 text-[10px] mt-0.5">{formatDate(post.createdAt)}</p>
-          </div>
+          {post.postedByTitle && <p className="text-amber-600 text-xs font-medium">{post.postedByTitle}</p>}
         </div>
         {isAdmin && (
-          <button onClick={handleDelete} disabled={deleting}
-            className="text-red-400 hover:text-red-600 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg"
-            style={{ fontFamily: "'Cinzel', serif" }}>
-            {deleting ? '...' : 'Delete'}
+          <button onClick={remove} disabled={deleting}
+            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-2 transition-colors"
+            aria-label="Delete post" title="Delete post">
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+            </svg>
           </button>
         )}
-      </div>
+      </header>
 
-      {/* ── Media — full width ── */}
-      <div className="w-full bg-black">
-        {post.mediaType === 'video' ? (
-          <video ref={videoRef} src={post.mediaUrl}
-            className="w-full object-cover"
-            style={{ maxHeight: '520px', minHeight: '200px' }}
-            controls muted playsInline loop />
-        ) : (
-          <img src={post.mediaUrl} alt={post.caption || 'Church post'}
-            className="w-full object-cover"
-            style={{ maxHeight: '520px', minHeight: '150px' }}
-            loading="lazy" />
-        )}
-      </div>
-
-      {/* ── Caption ── */}
-      {post.caption && (
-        <div className="px-5 pt-4 pb-2">
-          <p className="text-amber-900 leading-relaxed font-medium"
-            style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.05rem' }}>
-            {post.caption}
-          </p>
-        </div>
-      )}
-
-      {/* ── Stats bar ── */}
-      <div className="px-5 pt-3 pb-1 flex items-center justify-between">
-        {/* View count */}
-        <div className="flex items-center gap-1.5">
-          <svg viewBox="0 0 24 24" className="w-4 h-4 text-amber-400" fill="none">
-            <path d="M1 12C1 12 5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="1.5"/>
-            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
-          </svg>
-          <span className="text-xs font-bold text-amber-500">
-            {viewCount} {viewCount === 1 ? 'view' : 'views'}
-          </span>
-        </div>
-
-        {/* Reaction summary */}
-        {totalReactions > 0 && (
-          <div className="flex items-center gap-3">
-            {reactions.likes > 0 && (
-              <span className="flex items-center gap-1 text-xs font-bold text-blue-500">
-                <ThumbIcon filled={true} animating={false} />
-                {reactions.likes}
-              </span>
-            )}
-            {reactions.loves > 0 && (
-              <span className="flex items-center gap-1 text-xs font-bold text-red-500">
-                <HeartIcon filled={true} animating={false} />
-                {reactions.loves}
-              </span>
-            )}
-            {reactions.amens > 0 && (
-              <span className="flex items-center gap-1 text-xs font-bold text-gray-700">
-                <AmenIcon filled={true} animating={false} />
-                {reactions.amens}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Divider ── */}
-      <div className="mx-5 my-2 h-px bg-amber-50" />
-
-      {/* ── Reaction buttons ── */}
-      <div className="px-4 pb-4 flex items-center gap-2">
-
-        {/* 👍 Like */}
-        <div className="relative flex-1">
-          <FloatBadge show={floatShow === 'likes'} color="text-blue-600" />
-          <button onClick={() => handleReact('likes')} disabled={reacting}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all duration-200 ${
-              myReaction === 'likes'
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105'
-                : myReaction !== null
-                  ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                  : 'bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 active:scale-95'
-            }`}
-            style={{ fontFamily: "'Cinzel', serif" }}>
-            <ThumbIcon filled={myReaction === 'likes'} animating={animating === 'likes'} />
-            <span className="text-[11px]">
-              {myReaction === 'likes' ? 'Liked' : 'Like'}
-            </span>
-          </button>
-        </div>
-
-        {/* ❤️ Love */}
-        <div className="relative flex-1">
-          <FloatBadge show={floatShow === 'loves'} color="text-red-600" />
-          <button onClick={() => handleReact('loves')} disabled={reacting}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all duration-200 ${
-              myReaction === 'loves'
-                ? 'bg-red-600 text-white shadow-lg shadow-red-200 scale-105'
-                : myReaction !== null
-                  ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                  : 'bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-600 active:scale-95'
-            }`}
-            style={{ fontFamily: "'Cinzel', serif" }}>
-            <HeartIcon filled={myReaction === 'loves'} animating={animating === 'loves'} />
-            <span className="text-[11px]">
-              {myReaction === 'loves' ? 'Loved' : 'Love'}
-            </span>
-          </button>
-        </div>
-
-        {/* 🤲 Amen */}
-        <div className="relative flex-1">
-          <FloatBadge show={floatShow === 'amens'} color="text-gray-700" />
-          <button onClick={() => handleReact('amens')} disabled={reacting}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all duration-200 ${
-              myReaction === 'amens'
-                ? 'bg-gray-900 text-white shadow-lg shadow-gray-300 scale-105'
-                : myReaction !== null
-                  ? 'bg-gray-50 text-gray-300 cursor-not-allowed'
-                  : 'bg-gray-50 text-gray-500 hover:bg-gray-200 hover:text-gray-800 active:scale-95'
-            }`}
-            style={{ fontFamily: "'Cinzel', serif" }}>
-            <AmenIcon filled={myReaction === 'amens'} animating={animating === 'amens'} />
-            <span className="text-[11px]">
-              {myReaction === 'amens' ? 'Amen 🙏' : 'Amen'}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Hint */}
-      <p className="text-center text-[10px] text-amber-300 italic pb-3">
-        {myReaction ? 'Tap your reaction to remove it' : 'React once — Like, Love or Amen'}
+      {/* Text */}
+      <p className="px-5 pt-3 pb-4 text-[17px] leading-relaxed text-gray-900 whitespace-pre-wrap break-words">
+        {post.text}
       </p>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;600&display=swap');
-      `}</style>
-    </div>
+      {/* Stats */}
+      <div className="px-5 pb-2 flex items-center justify-between text-sm text-gray-500">
+        <span className="flex items-center gap-1.5"><EyeIcon /> {views} {views === 1 ? 'view' : 'views'}</span>
+        <span>
+          {total > 0 && `${total} reaction${total === 1 ? '' : 's'}`}
+          {total > 0 && shares > 0 && ' · '}
+          {shares > 0 && `${shares} share${shares === 1 ? '' : 's'}`}
+        </span>
+      </div>
+
+      {/* Actions */}
+      <div className="border-t border-amber-50 px-2 py-2 grid grid-cols-4 gap-1">
+        {REACTIONS.map(({ type, label, Icon, on, idle }) => (
+          <button key={type} onClick={() => react(type)} disabled={busy}
+            aria-pressed={mine === type}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 ${
+              mine === type ? `${on} shadow` : idle
+            }`}>
+            <Icon filled={mine === type} />
+            <span>{counts[type] > 0 ? counts[type] : label}</span>
+          </button>
+        ))}
+        <button onClick={share} disabled={sharing}
+          className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-amber-50 hover:text-amber-700 transition-all active:scale-95 disabled:opacity-60">
+          {sharing
+            ? <span className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            : <ShareIcon />}
+          <span>Share</span>
+        </button>
+      </div>
+
+      {notice && (
+        <p className={`text-center text-sm font-medium px-4 pb-3 ${notice.type === 'error' ? 'text-red-600' : 'text-green-700'}`}>
+          {notice.text}
+        </p>
+      )}
+    </article>
   );
 };
 

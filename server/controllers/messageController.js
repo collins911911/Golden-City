@@ -1,93 +1,62 @@
-const Member  = require('../models/Member');
-const Message = require('../models/Message');
+const Member      = require('../models/Member');
+const Message     = require('../models/Message');
 const { sendSMS } = require('../utils/termii');
+const { httpError } = require('../utils/validate');
 
-// POST /api/messages/group
-// Now supports single group OR multiple groups
+const toStatus = (results) => (phone, i) => ({
+  phone,
+  status: results[i]?.status === 'success' ? 'delivered' : 'pending',
+});
+
+// POST /api/messages/group   body: { groups: [...] } or { group: 'all' | 'men' ... , content }
 const sendGroupMessage = async (req, res) => {
-  const { group, groups, content, sentBy } = req.body;
-  // Support both single group (string) and multiple groups (array)
-  const targetGroups = groups && groups.length > 0
+  const { group, groups } = req.body;
+  const content = String(req.body.content || '').trim();
+  if (!content) throw httpError(400, 'Message cannot be empty.');
+
+  const targetGroups = Array.isArray(groups) && groups.length > 0
     ? groups
-    : group === 'all' ? ['all'] : [group];
+    : [group || 'all'];
 
-  try {
-    let members = [];
+  const filter  = targetGroups.includes('all') ? {} : { categories: { $in: targetGroups } };
+  // distinct() → each phone only once, even if someone is in 2 groups
+  const phones  = await Member.distinct('phone', filter);
+  if (phones.length === 0) throw httpError(400, 'No members found in the selected group(s).');
 
-    if (targetGroups.includes('all')) {
-      members = await Member.find({});
-    } else {
-      // Find members belonging to ANY of the selected groups
-      members = await Member.find({ categories: { $in: targetGroups } });
-    }
+  const results = await sendSMS(phones, content);
+  const message = await Message.create({
+    sentBy:         req.user.name || req.body.sentBy,
+    recipients:     phones,
+    group:          targetGroups.join(', '),
+    content,
+    type:           targetGroups.includes('all') ? 'all' : 'group',
+    deliveryStatus: phones.map(toStatus(results)),
+  });
 
-    if (members.length === 0) {
-      return res.status(400).json({ message: 'No members found in the selected group(s).' });
-    }
-
-    // Deduplicate — one person in both Workers & FFCC only gets SMS once
-    const seen   = new Set();
-    const unique = members.filter((m) => {
-      if (seen.has(m._id.toString())) return false;
-      seen.add(m._id.toString());
-      return true;
-    });
-
-    const phones = unique.map((m) => m.phone);
-    const results = await sendSMS(phones, content);
-
-    const deliveryStatus = phones.map((phone, i) => ({
-      phone,
-      status: results[i]?.status === 'success' ? 'delivered' : 'pending',
-    }));
-
-    const message = await Message.create({
-      sentBy,
-      recipients: phones,
-      group:      targetGroups.join(', '),
-      content,
-      type:       targetGroups.includes('all') ? 'all' : 'group',
-      deliveryStatus,
-    });
-
-    res.status(201).json({
-      message: 'SMS sent!',
-      count:   phones.length,
-      groups:  targetGroups,
-      id:      message._id,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.status(201).json({ message: 'SMS sent!', count: phones.length, groups: targetGroups, id: message._id });
 };
 
-// POST /api/messages/selective
+// POST /api/messages/selective   body: { recipients: [phones], content }
 const sendSelectiveMessage = async (req, res) => {
-  const { recipients, content, sentBy } = req.body;
-  try {
-    if (!recipients || recipients.length === 0) {
-      return res.status(400).json({ message: 'No recipients provided.' });
-    }
-    const results = await sendSMS(recipients, content);
-    const deliveryStatus = recipients.map((phone, i) => ({
-      phone,
-      status: results[i]?.status === 'success' ? 'delivered' : 'pending',
-    }));
-    await Message.create({ sentBy, recipients, content, type: 'selective', deliveryStatus });
-    res.status(201).json({ message: 'SMS sent!', count: recipients.length });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const content    = String(req.body.content || '').trim();
+  const recipients = [...new Set((req.body.recipients || []).map(String))];
+  if (recipients.length === 0) throw httpError(400, 'No recipients provided.');
+  if (!content) throw httpError(400, 'Message cannot be empty.');
+
+  const results = await sendSMS(recipients, content);
+  await Message.create({
+    sentBy: req.user.name || req.body.sentBy,
+    recipients,
+    content,
+    type: 'selective',
+    deliveryStatus: recipients.map(toStatus(results)),
+  });
+  res.status(201).json({ message: 'SMS sent!', count: recipients.length });
 };
 
 // GET /api/messages/history
 const getHistory = async (req, res) => {
-  try {
-    const messages = await Message.find({}).sort({ createdAt: -1 }).limit(100);
-    res.json(messages);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.json(await Message.find({}).sort({ createdAt: -1 }).limit(100).lean());
 };
 
 module.exports = { sendGroupMessage, sendSelectiveMessage, getHistory };

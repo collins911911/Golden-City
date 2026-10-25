@@ -1,146 +1,133 @@
-const bcrypt = require('bcryptjs');
-const jwt    = require('jsonwebtoken');
-const Admin  = require('../models/Admin');
-const Member = require('../models/Member');
+const bcrypt       = require('bcryptjs');
+const jwt          = require('jsonwebtoken');
+const Admin        = require('../models/Admin');
+const Member       = require('../models/Member');
+const Registration = require('../models/Registration');
+const { sendPushToAdmins } = require('../utils/push');
+const {
+  httpError, normalisePhone, isValidPhone, isValidDate,
+} = require('../utils/validate');
 
-// ── ADMIN LOGIN ──────────────────────────────────────────────
-const adminLogin = async (req, res) => {
-  const { username, password, passcode } = req.body;
-  if (passcode !== process.env.ADMIN_PASSCODE) {
-    return res.status(403).json({ message: 'Invalid admin passcode' });
-  }
-  try {
-    const admin = await Admin.findOne({ username });
-    if (!admin) return res.status(404).json({ message: 'Admin not found' });
-    const match = await bcrypt.compare(password, admin.password);
-    if (!match) return res.status(401).json({ message: 'Wrong password' });
-    const token = jwt.sign(
-      { id: admin._id, role: 'admin', name: admin.name, title: admin.title },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-    res.json({ token, name: admin.name, title: admin.title, role: 'admin' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+const signToken = (payload, expiresIn) =>
+  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+
+// Match a phone however it was typed when the member registered
+const phoneVariants = (raw) => {
+  const trimmed = String(raw || '').trim();
+  return [...new Set([trimmed, normalisePhone(trimmed)])];
 };
 
-// ── MEMBER REGISTER ──────────────────────────────────────────
+// ── ADMIN LOGIN ──────────────────────────────────────────────
+// POST /api/auth/admin/login
+const adminLogin = async (req, res) => {
+  const { username, password, passcode } = req.body;
+  if (!username || !password || !passcode) throw httpError(400, 'Username, password and passcode are required.');
+  if (passcode !== process.env.ADMIN_PASSCODE) throw httpError(403, 'Invalid admin passcode');
+
+  const admin = await Admin.findOne({ username: String(username).trim() });
+  if (!admin) throw httpError(404, 'Admin not found');
+
+  const match = await bcrypt.compare(password, admin.password);
+  if (!match) throw httpError(401, 'Wrong password');
+
+  const token = signToken(
+    { id: admin._id, role: 'admin', name: admin.name, title: admin.title },
+    '1d'
+  );
+  res.json({ token, id: admin._id, name: admin.name, title: admin.title, role: 'admin' });
+};
+
+// ── MEMBER REGISTER → creates a PENDING request ──────────────
+// POST /api/auth/member/register
 const memberRegister = async (req, res) => {
-  const { name, phone, dateOfBirth, password, categories } = req.body;
+  const { name, dateOfBirth, password, categories } = req.body;
+  const phone = normalisePhone(req.body.phone);
 
-  if (!name || !phone || !dateOfBirth || !password || !categories) {
-    return res.status(400).json({ message: 'All fields are required.' });
+  if (!name || !phone || !dateOfBirth || !password || !Array.isArray(categories) || categories.length === 0) {
+    throw httpError(400, 'All fields are required, including at least one group.');
   }
-  if (password.length < 6) {
-    return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+  if (!isValidPhone(phone)) throw httpError(400, 'Enter a valid Nigerian phone number, e.g. 08012345678.');
+  if (!isValidDate(dateOfBirth)) throw httpError(400, 'Enter a valid date of birth.');
+  if (String(password).length < 6) throw httpError(400, 'Password must be at least 6 characters.');
+
+  // Already a member?
+  if (await Member.exists({ phone: { $in: phoneVariants(phone) } })) {
+    throw httpError(400, 'This phone number is already registered. Please log in instead.');
   }
 
-  try {
-    // Duplicate phone check
-    const existing = await Member.findOne({ phone: phone.trim() });
-    if (existing) {
-      return res.status(400).json({
-        message: 'This phone number is already registered. Please log in instead.',
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const member = await Member.create({
-      name: name.trim(),
-      phone: phone.trim(),
-      dateOfBirth,
-      password: hashedPassword,
-      categories,
-    });
-
-    const token = jwt.sign(
-      { id: member._id, role: 'member', name: member.name, categories: member.categories },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    // ── WELCOME SMS — fires 1 hour after registration ────────
-    setTimeout(async () => {
-      try {
-        const { sendSMS } = require('../utils/termii');
-        const Message     = require('../models/Message');
-
-        const welcomeText =
-          `Welcome to CPM Golden City Church, ${member.name}! 🙏✝️ ` +
-          `We are so glad to have you join our family. ` +
-          `As you worship with us, may God's grace surround you always ` +
-          `and may you continually be blessed in His presence. ` +
-          `Welcome home! — Golden City Church Family 🌟`;
-
-        const results = await sendSMS([member.phone], welcomeText);
-
-        await Message.create({
-          sentBy:         'System (Auto-Welcome)',
-          recipients:     [member.phone],
-          content:        welcomeText,
-          type:           'selective',
-          deliveryStatus: [{
-            phone:  member.phone,
-            status: results[0]?.status === 'success' ? 'delivered' : 'pending',
-          }],
-        });
-
-        console.log(`👋 Welcome SMS sent to ${member.name} (${member.phone})`);
-      } catch (err) {
-        console.error('Welcome SMS error:', err.message);
-      }
-    }, 60 * 60 * 1000); // 1 hour = 3,600,000 ms
-    // ── END WELCOME SMS ──────────────────────────────────────
-
-    res.status(201).json({
-      token,
-      name:       member.name,
-      role:       'member',
-      categories: member.categories,
-    });
-
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({
-        message: 'This phone number is already registered. Please log in instead.',
-      });
-    }
-    res.status(500).json({ message: err.message });
+  // Already waiting?
+  const existing = await Registration.findOne({ phone }).sort({ createdAt: -1 });
+  if (existing && existing.status === 'pending') {
+    throw httpError(400, 'You already have a request waiting for approval. You will get an SMS once an admin reviews it.');
   }
+
+  const hashed = await bcrypt.hash(password, 10);
+  const data = {
+    name: String(name).trim(),
+    phone,
+    dateOfBirth,
+    password: hashed,
+    categories,
+    status: 'pending',
+    reason: '',
+    reviewedBy: '',
+    reviewedAt: undefined,
+  };
+
+  // A previously rejected person can apply again — reuse their record
+  let registration;
+  if (existing && existing.status === 'rejected') {
+    existing.set(data);
+    registration = await existing.save();
+  } else {
+    registration = await Registration.create(data);
+  }
+
+  // Tell ADMINS only (not members) — don't wait for it
+  sendPushToAdmins('New registration request', `${registration.name} wants to join Golden City.`);
+
+  res.status(201).json({
+    status:  'pending',
+    name:    registration.name,
+    message: 'Your request has been submitted. An admin will review it and you will receive an SMS.',
+  });
 };
 
 // ── MEMBER LOGIN ─────────────────────────────────────────────
+// POST /api/auth/member/login
 const memberLogin = async (req, res) => {
-  const { phone, password } = req.body;
-  if (!phone || !password) {
-    return res.status(400).json({ message: 'Phone number and password are required.' });
-  }
-  try {
-    const member = await Member.findOne({ phone: phone.trim() });
-    if (!member) {
-      return res.status(404).json({
-        message: 'No account found with this phone number. Please register first.',
-      });
+  const { password } = req.body;
+  if (!req.body.phone || !password) throw httpError(400, 'Phone number and password are required.');
+
+  const variants = phoneVariants(req.body.phone);
+  const member   = await Member.findOne({ phone: { $in: variants } }).select('+password');
+
+  if (!member) {
+    // Not a member yet — explain why
+    const reg = await Registration.findOne({ phone: { $in: variants } }).sort({ createdAt: -1 }).lean();
+    if (reg?.status === 'pending') {
+      throw httpError(403, 'Your registration is still waiting for admin approval. You will get an SMS once it is approved.');
     }
-    const match = await bcrypt.compare(password, member.password);
-    if (!match) {
-      return res.status(401).json({ message: 'Incorrect password. Please try again.' });
+    if (reg?.status === 'rejected') {
+      throw httpError(403, `Your registration was not approved${reg.reason ? `: ${reg.reason}` : '.'} You can register again or contact the church office.`);
     }
-    const token = jwt.sign(
-      { id: member._id, role: 'member', name: member.name, categories: member.categories },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    res.json({
-      token,
-      name:       member.name,
-      role:       'member',
-      categories: member.categories,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    throw httpError(404, 'No account found with this phone number. Please register first.');
   }
+
+  const match = await bcrypt.compare(password, member.password);
+  if (!match) throw httpError(401, 'Incorrect password. Please try again.');
+
+  const token = signToken(
+    { id: member._id, role: 'member', name: member.name, categories: member.categories },
+    '7d'
+  );
+  res.json({
+    token,
+    id:         member._id,
+    name:       member.name,
+    role:       'member',
+    categories: member.categories,
+  });
 };
 
 module.exports = { adminLogin, memberRegister, memberLogin };
