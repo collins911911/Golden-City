@@ -25,7 +25,7 @@ const MemberPosts = () => {
         )}
 
         {posts.length === 0 && !error && (
-          <div className="text-center py-24 text-gray-400">
+          <div className="text-center py-24 text-gray-600">
             <p className="text-5xl mb-3">📣</p>
             <p>No posts yet. Check back soon.</p>
           </div>

@@ -69,7 +69,7 @@ const AdminPosts = () => {
           {success && <p className="mt-2 text-sm text-green-700 font-medium">✅ {success}</p>}
 
           <div className="mt-3 pt-3 border-t border-amber-50 flex items-center justify-between">
-            <span className={`text-sm ${left < 50 ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+            <span className={`text-sm ${left < 50 ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
               {left} characters left
             </span>
             <button onClick={publish} disabled={posting || !text.trim()}
@@ -87,7 +87,7 @@ const AdminPosts = () => {
         )}
 
         {posts.length === 0 && !error && (
-          <div className="text-center py-20 text-gray-400">
+          <div className="text-center py-20 text-gray-600">
             <p className="text-5xl mb-3">✍️</p>
             <p>No posts yet. Write the first one above.</p>
           </div>

@@ -109,14 +109,14 @@ const GroupMessage = () => {
   const smsUnits  = Math.ceil(charCount / 160) || 1;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 py-10">
         {/* Header */}
         <div className="mb-8">
           <button onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}>
             ← Dashboard
           </button>
@@ -127,7 +127,7 @@ const GroupMessage = () => {
               Group Message
             </h1>
           </div>
-          <p className="text-amber-600 mt-1 ml-4 text-sm">
+          <p className="text-amber-800 mt-1 ml-4 text-sm">
             Select one or more groups — members in multiple selected groups receive the SMS only once
           </p>
         </div>
@@ -139,7 +139,7 @@ const GroupMessage = () => {
               <p className="font-bold text-green-800" style={{ fontFamily: "'Cinzel', serif" }}>Message Sent!</p>
               <p className="text-green-600 text-sm">Your SMS has been dispatched.</p>
             </div>
-            <button onClick={() => setSent(false)} className="ml-auto text-green-400 hover:text-green-600 text-xl">×</button>
+            <button onClick={() => setSent(false)} className="ml-auto text-green-700 hover:text-green-600 text-xl">×</button>
           </div>
         )}
 
@@ -160,7 +160,7 @@ const GroupMessage = () => {
               </p>
               {selectedGroups.length > 0 && (
                 <button onClick={() => setSelectedGroups([])}
-                  className="text-xs text-amber-400 hover:text-amber-600 underline transition-colors">
+                  className="text-sm text-amber-700 hover:text-amber-800 underline transition-colors">
                   Clear all
                 </button>
               )}
@@ -182,18 +182,18 @@ const GroupMessage = () => {
                       selected ? 'bg-white border-white' : 'border-amber-300'
                     }`}>
                       {selected && (
-                        <svg className="w-2.5 h-2.5 text-amber-600" viewBox="0 0 10 10" fill="none">
+                        <svg className="w-2.5 h-2.5 text-amber-800" viewBox="0 0 10 10" fill="none">
                           <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
                     </div>
                     <span className="text-sm">{cat.emoji}</span>
                     <div className="min-w-0">
-                      <p className={`text-xs font-semibold truncate ${selected ? 'text-white' : ''}`}
+                      <p className={`text-sm font-semibold truncate ${selected ? 'text-white' : ''}`}
                         style={{ fontFamily: selected ? "'Cinzel', serif" : 'inherit' }}>
                         {cat.label}
                       </p>
-                      <p className={`text-[10px] ${selected ? 'text-white/70' : 'text-amber-400'}`}>
+                      <p className={`text-sm ${selected ? 'text-white/70' : 'text-amber-700'}`}>
                         {count} members
                       </p>
                     </div>
@@ -205,7 +205,7 @@ const GroupMessage = () => {
             {/* Selected summary */}
             {selectedGroups.length > 0 && (
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-xs text-amber-500 font-semibold uppercase tracking-widest"
+                <span className="text-xs text-amber-700 font-semibold uppercase tracking-widest"
                   style={{ fontFamily: "'Cinzel', serif" }}>
                   Sending to:
                 </span>
@@ -213,14 +213,14 @@ const GroupMessage = () => {
                   const cat = CATEGORIES.find((c) => c.id === id);
                   return (
                     <span key={id}
-                      className="inline-flex items-center gap-1 bg-amber-100 border border-amber-200 text-amber-800 text-xs font-semibold rounded-full px-3 py-1">
+                      className="inline-flex items-center gap-1 bg-amber-100 border border-amber-200 text-amber-800 text-sm font-semibold rounded-full px-3 py-1">
                       {cat?.emoji} {cat?.label}
                       <button onClick={() => toggleGroup(id)}
-                        className="ml-1 text-amber-400 hover:text-amber-700 font-bold">×</button>
+                        className="ml-1 text-amber-700 hover:text-amber-700 font-bold">×</button>
                     </span>
                   );
                 })}
-                <span className="ml-auto text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1"
+                <span className="ml-auto text-sm font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1"
                   style={{ fontFamily: "'Cinzel', serif" }}>
                   ~{totalCount} recipients
                 </span>
@@ -236,11 +236,11 @@ const GroupMessage = () => {
                 2. Compose Message
               </p>
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-mono ${charCount > 160 ? 'text-amber-600' : 'text-amber-300'}`}>
+                <span className={`text-sm font-mono ${charCount > 160 ? 'text-amber-800' : 'text-amber-700'}`}>
                   {charCount}/160
                 </span>
                 {charCount > 0 && (
-                  <span className="text-xs text-amber-400 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                  <span className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
                     {smsUnits} SMS
                   </span>
                 )}
@@ -252,8 +252,7 @@ const GroupMessage = () => {
               placeholder="Type your message here..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-4 rounded-2xl border border-amber-200 bg-amber-50/30 text-gray-800 placeholder-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none text-sm leading-relaxed transition-all"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}
+              className="w-full px-4 py-4 rounded-2xl border border-amber-200 bg-amber-50/30 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none text-sm leading-relaxed transition-all"
             />
           </div>
 

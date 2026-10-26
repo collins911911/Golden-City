@@ -46,17 +46,15 @@ const searchMembers = async (req, res) => {
 const updateMember = async (req, res) => {
   const updates = pick(req.body, ['name', 'phone', 'dateOfBirth', 'categories']);
   if (updates.phone) updates.phone = normalisePhone(updates.phone);
-  const updated = await Member.findByIdAndUpdate(req.params.id, updates, {
-    returnDocument: 'after', runValidators: true,
-  }).lean();
-  if (!updated) throw httpError(404, 'Member not found');
-  res.json(updated);
+  const result = await Member.updateOne({ _id: req.params.id }, updates, { runValidators: true });
+  if (result.matchedCount === 0) throw httpError(404, 'Member not found');
+  res.json(await Member.findById(req.params.id).lean());
 };
 
 // DELETE /api/admin/members/:id
 const deleteMember = async (req, res) => {
-  const deleted = await Member.findByIdAndDelete(req.params.id);
-  if (!deleted) throw httpError(404, 'Member not found');
+  const result = await Member.deleteOne({ _id: req.params.id });
+  if (result.deletedCount === 0) throw httpError(404, 'Member not found');
   res.json({ message: 'Member deleted successfully' });
 };
 

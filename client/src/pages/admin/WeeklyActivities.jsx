@@ -101,14 +101,14 @@ const WeeklyActivities = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-10">
 
         {/* Header */}
         <div className="mb-8">
           <button onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}>
             ← Dashboard
           </button>
@@ -200,7 +200,7 @@ const WeeklyActivities = () => {
         {/* Activities grouped by day */}
         <div className="space-y-4">
           {activities.length === 0 && (
-            <div className="text-center py-16 text-amber-300 text-lg italic">No activities added yet.</div>
+            <div className="text-center py-16 text-amber-700 text-lg italic">No activities added yet.</div>
           )}
           {DAYS.map((day) => (
             grouped[day].length > 0 && (
@@ -210,7 +210,7 @@ const WeeklyActivities = () => {
                     style={{ fontFamily: "'Cinzel', serif" }}>
                     {day}
                   </p>
-                  <span className="text-white/70 text-xs">
+                  <span className="text-white/70 text-sm">
                     {grouped[day].length} {grouped[day].length === 1 ? 'activity' : 'activities'}
                   </span>
                 </div>
@@ -226,8 +226,8 @@ const WeeklyActivities = () => {
                             style={{ fontFamily: "'Cinzel', serif" }}>
                             {act.title}
                           </p>
-                          {act.location && <p className="text-amber-400 text-xs">📍 {act.location}</p>}
-                          {act.description && <p className="text-amber-600 text-sm">{act.description}</p>}
+                          {act.location && <p className="text-amber-700 text-sm">📍 {act.location}</p>}
+                          {act.description && <p className="text-amber-800 text-sm">{act.description}</p>}
                         </div>
                       </div>
                       <div className="flex gap-2">

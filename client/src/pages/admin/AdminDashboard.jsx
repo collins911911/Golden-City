@@ -56,7 +56,7 @@ const AdminDashboard = () => {
 
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
 
       {/* Hero Banner */}
@@ -146,7 +146,7 @@ const AdminDashboard = () => {
                   <span className="text-4xl block mb-3">{g.emoji}</span>
                   <p className="text-white font-bold text-xl uppercase tracking-widest"
                     style={{ fontFamily: "'Cinzel', serif" }}>{g.label}</p>
-                  <p className="text-yellow-200 text-xs mt-1">{stats[g.id] || 0} members · tap to message</p>
+                  <p className="text-yellow-200 text-sm mt-1">{stats[g.id] || 0} members · tap to message</p>
                   <div className="mt-4 flex items-center gap-1 text-yellow-300 text-xs font-semibold uppercase tracking-widest">
                     <span>Send Message</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -174,7 +174,7 @@ const AdminDashboard = () => {
                 <div className="text-3xl mb-2">{cat.emoji}</div>
                 <p className="text-xs font-bold text-amber-900 uppercase tracking-wider leading-tight"
                   style={{ fontFamily: "'Cinzel', serif" }}>{cat.label}</p>
-                <p className="text-amber-500 text-xs mt-1 font-semibold tabular-nums">{stats[cat.id] || 0} members</p>
+                <p className="text-amber-700 text-sm mt-1 font-semibold tabular-nums">{stats[cat.id] || 0} members</p>
               </button>
             ))}
           </div>
@@ -204,14 +204,14 @@ const AdminDashboard = () => {
             <span className="text-2xl">📝</span>
             <div className="text-left">
               <p className="text-xs font-bold text-green-900 uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Registrations</p>
-              <p className="text-xs text-green-700 mt-0.5">
+              <p className="text-sm text-green-700 mt-0.5">
                 {stats.pendingRegistrations > 0
                   ? `${stats.pendingRegistrations} waiting for approval`
                   : 'No pending requests'}
               </p>
             </div>
             {stats.pendingRegistrations > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[24px] h-6 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
+              <span className="absolute -top-2 -right-2 min-w-[24px] h-6 px-1.5 bg-red-500 text-white text-sm font-bold rounded-full flex items-center justify-center border-2 border-white">
                 {stats.pendingRegistrations}
               </span>
             )}
@@ -222,7 +222,7 @@ const AdminDashboard = () => {
             <span className="text-2xl">👥</span>
             <div className="text-left">
               <p className="text-xs font-bold text-amber-900 uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Member Management</p>
-              <p className="text-xs text-amber-500 mt-0.5">View, edit, delete members</p>
+              <p className="text-sm text-amber-700 mt-0.5">View, edit, delete members</p>
             </div>
           </button>
 
@@ -231,7 +231,7 @@ const AdminDashboard = () => {
             <span className="text-2xl">🎂</span>
             <div className="text-left">
               <p className="text-xs font-bold text-amber-900 uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Birthday Settings</p>
-              <p className="text-xs text-amber-500 mt-0.5">Auto-SMS template & schedule</p>
+              <p className="text-sm text-amber-700 mt-0.5">Auto-SMS template & schedule</p>
             </div>
           </button>
 
@@ -241,7 +241,7 @@ const AdminDashboard = () => {
             <span className="text-2xl">✍️</span>
             <div className="text-left">
               <p className="text-xs font-bold text-amber-900 uppercase tracking-wider" style={{ fontFamily: "'Cinzel', serif" }}>Posts</p>
-              <p className="text-xs text-amber-500 mt-0.5">{postCount} post{postCount !== 1 ? 's' : ''} · write & share</p>
+              <p className="text-sm text-amber-700 mt-0.5">{postCount} post{postCount !== 1 ? 's' : ''} · write & share</p>
             </div>
           </button>
         </div>

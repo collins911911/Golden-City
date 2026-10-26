@@ -68,14 +68,14 @@ const NoticeBoard = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-10">
 
         {/* Header */}
         <div className="mb-8">
           <button onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}>
             ← Dashboard
           </button>
@@ -116,7 +116,7 @@ const NoticeBoard = () => {
               placeholder="Notice Title *"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-amber-200 bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 mb-4"
+              className="w-full px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-semibold placeholder-gray-400 focus:outline-none focus:border-amber-500 mb-4"
             />
 
             <textarea
@@ -124,8 +124,7 @@ const NoticeBoard = () => {
               placeholder="Notice body — write what the congregation needs to know..."
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-amber-200 bg-white text-gray-800 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 mb-4"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}
+              className="w-full px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-medium placeholder-gray-400 resize-none focus:outline-none focus:border-amber-500 mb-4"
             />
 
             {/* Important toggle */}
@@ -155,7 +154,7 @@ const NoticeBoard = () => {
         {/* Notices list */}
         <div className="space-y-4">
           {notices.length === 0 && (
-            <div className="text-center py-16 text-amber-300 text-lg italic">No notices posted yet.</div>
+            <div className="text-center py-16 text-amber-700 text-lg italic">No notices posted yet.</div>
           )}
           {notices.map((notice) => (
             <div key={notice._id}
@@ -168,12 +167,11 @@ const NoticeBoard = () => {
               <div className="px-6 py-5">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex-1">
-                    <h3 className="font-bold text-amber-900 text-lg mb-1"
-                      style={{ fontFamily: "'Cinzel', serif" }}>
+                    <h3 className="font-bold text-gray-900 text-lg mb-1">
                       {notice.title}
                     </h3>
-                    <p className="text-amber-700 leading-relaxed text-sm">{notice.body}</p>
-                    <p className="text-amber-400 text-xs mt-3">
+                    <p className="text-gray-800 leading-relaxed text-base font-medium whitespace-pre-wrap">{notice.body}</p>
+                    <p className="text-amber-800 text-sm font-medium mt-3">
                       Posted by {notice.postedBy} · {new Date(notice.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </p>
                   </div>

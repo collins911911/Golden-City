@@ -49,13 +49,13 @@ const MessageHistory = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="mb-8">
           <button onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}>
             ← Dashboard
           </button>
@@ -65,7 +65,7 @@ const MessageHistory = () => {
               Message History
             </h1>
           </div>
-          <p className="text-amber-500 mt-1 ml-4 text-sm">{messages.length} messages sent total</p>
+          <p className="text-amber-700 mt-1 ml-4 text-sm">{messages.length} messages sent total</p>
         </div>
 
         {/* Filter tabs */}
@@ -86,7 +86,7 @@ const MessageHistory = () => {
         {/* Messages list */}
         <div className="space-y-4">
           {filtered.length === 0 && (
-            <div className="text-center py-20 text-amber-300 text-lg italic">No messages yet.</div>
+            <div className="text-center py-20 text-amber-700 text-lg italic">No messages yet.</div>
           )}
           {filtered.map((msg) => {
             const typeInfo = TYPE_LABEL[msg.type] || TYPE_LABEL.group;
@@ -98,27 +98,27 @@ const MessageHistory = () => {
                   onClick={() => setExpanded(isOpen ? null : msg._id)}>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <span className={`text-xs font-bold border rounded-full px-2.5 py-0.5 ${typeInfo.color}`}
+                      <span className={`text-sm font-bold border rounded-full px-2.5 py-0.5 ${typeInfo.color}`}
                         style={{ fontFamily: "'Cinzel', serif" }}>
                         {typeInfo.label}
                       </span>
                       {msg.group && (
-                        <span className="text-xs bg-amber-50 border border-amber-200 text-amber-700 rounded-full px-2.5 py-0.5">
+                        <span className="text-sm bg-amber-50 border border-amber-200 text-amber-700 rounded-full px-2.5 py-0.5">
                           {msg.group}
                         </span>
                       )}
-                      <span className="text-xs text-amber-400">{formatDate(msg.createdAt)}</span>
+                      <span className="text-sm text-amber-700">{formatDate(msg.createdAt)}</span>
                     </div>
                     <p className="text-amber-900 text-sm leading-relaxed line-clamp-2">{msg.content}</p>
-                    <p className="text-amber-400 text-xs mt-1">Sent by: {msg.sentBy}</p>
+                    <p className="text-amber-700 text-sm mt-1">Sent by: {msg.sentBy}</p>
                   </div>
 
                   {/* Stats */}
                   <div className="flex-shrink-0 flex flex-col items-end gap-1">
-                    <span className="text-xs font-bold text-amber-800">{msg.recipients?.length || 0} sent</span>
-                    <span className="text-xs text-green-600">✓ {deliveredCount(msg)}</span>
-                    {failedCount(msg) > 0 && <span className="text-xs text-red-500">✗ {failedCount(msg)}</span>}
-                    <span className={`text-xs mt-1 text-amber-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+                    <span className="text-sm font-bold text-amber-800">{msg.recipients?.length || 0} sent</span>
+                    <span className="text-sm text-green-600">✓ {deliveredCount(msg)}</span>
+                    {failedCount(msg) > 0 && <span className="text-sm text-red-500">✗ {failedCount(msg)}</span>}
+                    <span className={`text-sm mt-1 text-amber-700 transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
                   </div>
                 </button>
 
@@ -132,8 +132,8 @@ const MessageHistory = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                       {msg.deliveryStatus.map((s, i) => (
                         <div key={i} className="flex items-center justify-between bg-white border border-amber-100 rounded-xl px-3 py-2">
-                          <span className="text-xs text-amber-800 font-mono">{s.phone}</span>
-                          <span className={`text-xs font-bold border rounded-full px-2 py-0.5 ${STATUS_COLOR[s.status] || STATUS_COLOR.pending}`}>
+                          <span className="text-sm text-amber-800 font-mono">{s.phone}</span>
+                          <span className={`text-sm font-bold border rounded-full px-2 py-0.5 ${STATUS_COLOR[s.status] || STATUS_COLOR.pending}`}>
                             {s.status}
                           </span>
                         </div>

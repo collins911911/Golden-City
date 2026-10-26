@@ -86,14 +86,14 @@ const MemberManagement = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 py-10">
         {/* Header */}
         <div className="mb-8">
           <button onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}>
             ← Dashboard
           </button>
@@ -104,7 +104,7 @@ const MemberManagement = () => {
                 <h1 className="text-3xl font-bold text-amber-900 uppercase tracking-widest" style={{ fontFamily: "'Cinzel', serif" }}>
                   Members
                 </h1>
-                <p className="text-amber-500 text-sm">{members.length} total registered</p>
+                <p className="text-amber-700 text-sm">{members.length} total registered</p>
               </div>
             </div>
           </div>
@@ -116,10 +116,10 @@ const MemberManagement = () => {
         {/* Filters */}
         <div className="bg-white rounded-2xl border border-amber-100 shadow p-5 mb-6 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400">🔍</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700">🔍</span>
             <input type="text" placeholder="Search name or phone..."
               value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50/30 text-sm text-gray-800 placeholder-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all" />
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50/30 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all" />
           </div>
           <select value={filterGroup} onChange={(e) => setFilterGroup(e.target.value)}
             className="px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50/30 text-sm text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
@@ -132,7 +132,7 @@ const MemberManagement = () => {
         {/* Member cards */}
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="text-center py-16 text-amber-300 text-lg italic">No members found.</div>
+            <div className="text-center py-16 text-amber-700 text-lg italic">No members found.</div>
           )}
           {filtered.map((member) => (
             <div key={member._id} className="bg-white rounded-2xl border border-amber-100 shadow hover:shadow-md transition-shadow overflow-hidden">
@@ -156,7 +156,7 @@ const MemberManagement = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
                     {CATEGORIES.map((cat) => (
                       <button key={cat.id} onClick={() => toggleEditCat(cat.id)}
-                        className={`flex items-center gap-1 px-2 py-2 rounded-xl border text-xs font-medium transition-all ${
+                        className={`flex items-center gap-1 px-2 py-2 rounded-xl border text-sm font-medium transition-all ${
                           editForm.categories?.includes(cat.id)
                             ? 'bg-amber-500 border-amber-500 text-white'
                             : 'border-amber-200 text-amber-700 hover:border-amber-400'
@@ -188,12 +188,12 @@ const MemberManagement = () => {
                     </div>
                     <div>
                       <p className="font-bold text-amber-900" style={{ fontFamily: "'Cinzel', serif" }}>{member.name}</p>
-                      <p className="text-amber-500 text-xs">{member.phone} · DOB: {member.dateOfBirth}</p>
+                      <p className="text-amber-700 text-sm">{member.phone} · DOB: {member.dateOfBirth}</p>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {member.categories?.map((c) => {
                           const cat = CATEGORIES.find((x) => x.id === c);
                           return (
-                            <span key={c} className="text-xs bg-amber-50 border border-amber-200 text-amber-700 rounded-full px-2 py-0.5">
+                            <span key={c} className="text-sm bg-amber-50 border border-amber-200 text-amber-700 rounded-full px-2 py-0.5">
                               {cat?.emoji} {cat?.label}
                             </span>
                           );
@@ -209,13 +209,13 @@ const MemberManagement = () => {
                     </button>
                     {deleting === member._id ? (
                       <div className="flex gap-2 items-center">
-                        <span className="text-xs text-red-500 font-semibold">Sure?</span>
+                        <span className="text-sm text-red-500 font-semibold">Sure?</span>
                         <button onClick={() => confirmDelete(member._id)}
                           className="px-3 py-2 rounded-xl bg-red-500 text-white text-xs font-bold uppercase tracking-widest hover:bg-red-600 transition-all">
                           Yes
                         </button>
                         <button onClick={() => setDeleting(null)}
-                          className="px-3 py-2 rounded-xl border border-gray-200 text-gray-500 text-xs font-bold uppercase tracking-widest">
+                          className="px-3 py-2 rounded-xl border border-gray-200 text-gray-700 text-xs font-bold uppercase tracking-widest">
                           No
                         </button>
                       </div>

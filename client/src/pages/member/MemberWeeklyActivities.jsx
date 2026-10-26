@@ -54,7 +54,7 @@ const MemberWeeklyActivities = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDF8F8]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDF8F8] font-sans">
       <Navbar />
 
       {/* Hero */}
@@ -106,7 +106,7 @@ const MemberWeeklyActivities = () => {
                       ? `bg-gradient-to-r ${s.grad} text-white border-transparent shadow-lg scale-105`
                       : hasActs
                         ? 'bg-white border-red-200 text-red-700 hover:border-red-400 hover:shadow'
-                        : 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed'
+                        : 'bg-gray-50 border-gray-100 text-gray-600 cursor-not-allowed'
                   }`}
                   style={{ fontFamily: "'Cinzel', serif" }}>
                   {day.slice(0, 3)}
@@ -114,7 +114,7 @@ const MemberWeeklyActivities = () => {
                     <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 border border-white" />
                   )}
                   {hasActs && (
-                    <span className={`ml-1.5 text-[10px] ${isActive ? 'text-white/70' : 'text-red-400'}`}>
+                    <span className={`ml-1.5 text-sm ${isActive ? 'text-white/70' : 'text-red-700'}`}>
                       {grouped[day].length}
                     </span>
                   )}
@@ -190,7 +190,7 @@ const MemberWeeklyActivities = () => {
                             {act.title}
                           </h4>
                           {act.location && (
-                            <p className="text-red-400 text-xs mt-0.5 flex items-center gap-1">
+                            <p className="text-red-700 text-sm mt-0.5 flex items-center gap-1">
                               <span>📍</span>{act.location}
                             </p>
                           )}
@@ -211,7 +211,7 @@ const MemberWeeklyActivities = () => {
         {activities.length === 0 && (
           <div className="text-center py-24">
             <p className="text-6xl mb-4">🗓️</p>
-            <p className="text-red-300 text-lg italic">No activities scheduled yet.</p>
+            <p className="text-red-700 text-lg italic">No activities scheduled yet.</p>
           </div>
         )}
       </div>

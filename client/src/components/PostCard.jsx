@@ -71,8 +71,9 @@ const PostCard = ({ post, isAdmin = false, onDelete }) => {
   };
 
   // Count a view once the post has been on screen for 1.5 seconds
+  // (members only — admins reading their own posts don't count)
   useEffect(() => {
-    if (post.viewed || !cardRef.current) return;
+    if (isAdmin || post.viewed || !cardRef.current) return;
     let timer;
     let done = false;
     const observer = new IntersectionObserver(([entry]) => {
@@ -92,7 +93,7 @@ const PostCard = ({ post, isAdmin = false, onDelete }) => {
     }, { threshold: 0.6 });
     observer.observe(cardRef.current);
     return () => { observer.disconnect(); clearTimeout(timer); };
-  }, [post._id, post.viewed]);
+  }, [post._id, post.viewed, isAdmin]);
 
   const react = async (type) => {
     if (busy) return;
@@ -163,17 +164,17 @@ const PostCard = ({ post, isAdmin = false, onDelete }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-semibold text-gray-900 truncate">{post.postedBy}</span>
-            <svg viewBox="0 0 24 24" className="w-4 h-4 text-amber-500" fill="currentColor" aria-label="Church admin">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 text-amber-700" fill="currentColor" aria-label="Church admin">
               <path d="M12 2l2.4 2.2 3.2-.4.9 3.1 2.9 1.5-1 3.1 1 3.1-2.9 1.5-.9 3.1-3.2-.4L12 22l-2.4-2.2-3.2.4-.9-3.1-2.9-1.5 1-3.1-1-3.1 2.9-1.5.9-3.1 3.2.4z" />
               <path d="M8.5 12.5l2.2 2.2 4.8-4.8" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" />
             </svg>
-            <span className="text-gray-400 text-sm">· {timeAgo(post.createdAt)}</span>
+            <span className="text-gray-600 text-sm">· {timeAgo(post.createdAt)}</span>
           </div>
-          {post.postedByTitle && <p className="text-amber-600 text-xs font-medium">{post.postedByTitle}</p>}
+          {post.postedByTitle && <p className="text-amber-800 text-sm font-medium">{post.postedByTitle}</p>}
         </div>
         {isAdmin && (
           <button onClick={remove} disabled={deleting}
-            className="text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-2 transition-colors"
+            className="text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg p-2 transition-colors"
             aria-label="Delete post" title="Delete post">
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
@@ -188,7 +189,7 @@ const PostCard = ({ post, isAdmin = false, onDelete }) => {
       </p>
 
       {/* Stats */}
-      <div className="px-5 pb-2 flex items-center justify-between text-sm text-gray-500">
+      <div className="px-5 pb-2 flex items-center justify-between text-sm text-gray-700">
         <span className="flex items-center gap-1.5"><EyeIcon /> {views} {views === 1 ? 'view' : 'views'}</span>
         <span>
           {total > 0 && `${total} reaction${total === 1 ? '' : 's'}`}

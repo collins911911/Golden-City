@@ -93,7 +93,7 @@ const MemberNoticeBoard = () => {
         {displayed.length === 0 && (
           <div className="text-center py-24">
             <p className="text-6xl mb-4">📌</p>
-            <p className="text-red-300 text-lg italic">No notices to display.</p>
+            <p className="text-red-700 text-lg italic">No notices to display.</p>
           </div>
         )}
 
@@ -145,7 +145,7 @@ const MemberNoticeBoard = () => {
                     </div>
                   </div>
 
-                  <span className={`flex-shrink-0 text-red-400 text-sm transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                  <span className={`flex-shrink-0 text-red-700 text-sm transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
                 </button>

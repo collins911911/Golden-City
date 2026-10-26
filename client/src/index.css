@@ -9,6 +9,22 @@ html {
 
 body {
   @apply font-sans text-gray-900 bg-white antialiased;
+  font-weight: 500; /* slightly bolder everywhere — easier to read on phones */
+}
+
+/* Everything people TYPE (inputs, text boxes, dropdowns) — big, bold and dark.
+   16px also stops iPhones from zooming in when you tap a box. */
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
+textarea,
+select {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af !important;
+  font-weight: 500 !important;
 }
 
 button:focus-visible,

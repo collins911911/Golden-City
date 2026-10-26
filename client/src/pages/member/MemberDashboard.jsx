@@ -61,7 +61,7 @@ const MemberDashboard = () => {
   const userCategories = user?.categories || [];
 
   return (
-    <div className="min-h-screen bg-[#FDF8F8]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDF8F8] font-sans">
       <Navbar />
 
       {/* ── Hero Banner ── */}
@@ -92,8 +92,7 @@ const MemberDashboard = () => {
             </h2>
             <div className="flex items-center gap-2 mt-2">
               <div className="w-6 h-px bg-amber-400/60" />
-              <p className="text-red-100/80 text-sm italic"
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}>
+              <p className="text-red-100/80 text-sm italic">
                 "Raising a golden generation for God's Kingdom"
               </p>
             </div>
@@ -103,7 +102,7 @@ const MemberDashboard = () => {
                   const found = CATEGORIES.find((c) => c.id === cat);
                   return found ? (
                     <span key={cat}
-                      className="text-xs bg-white/15 border border-white/20 text-white rounded-full px-3 py-1 backdrop-blur"
+                      className="text-sm bg-white/15 border border-white/20 text-white rounded-full px-3 py-1 backdrop-blur"
                       style={{ fontFamily: "'Cinzel', serif" }}>
                       {found.emoji} {found.label}
                     </span>
@@ -177,7 +176,7 @@ const MemberDashboard = () => {
                   style={{ fontFamily: "'Cinzel', serif" }}>
                   Latest Post
                   {unviewedCount > 0 && (
-                    <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full animate-pulse">
+                    <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-red-600 text-white text-sm font-black rounded-full animate-pulse">
                       {unviewedCount > 9 ? '9+' : unviewedCount}
                     </span>
                   )}

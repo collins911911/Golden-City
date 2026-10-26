@@ -70,14 +70,14 @@ const AgendaManager = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-10">
 
         {/* Header */}
         <div className="mb-8">
           <button onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}>
             ← Dashboard
           </button>
@@ -118,26 +118,26 @@ const AgendaManager = () => {
                 placeholder="Event Title *"
                 value={form.title}
                 onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                className="px-4 py-3 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                className="px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-semibold placeholder-gray-400 focus:outline-none focus:border-amber-500"
               />
               <input
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
-                className="px-4 py-3 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                className="px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-semibold placeholder-gray-400 focus:outline-none focus:border-amber-500"
               />
               <input
                 type="time"
                 value={form.time}
                 onChange={(e) => setForm((prev) => ({ ...prev, time: e.target.value }))}
-                className="px-4 py-3 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                className="px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-semibold placeholder-gray-400 focus:outline-none focus:border-amber-500"
               />
               <input
                 type="number"
                 placeholder="Year"
                 value={form.year}
                 onChange={(e) => setForm((prev) => ({ ...prev, year: e.target.value }))}
-                className="px-4 py-3 rounded-xl border border-amber-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                className="px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-semibold placeholder-gray-400 focus:outline-none focus:border-amber-500"
               />
             </div>
 
@@ -146,7 +146,7 @@ const AgendaManager = () => {
               placeholder="Description (optional)"
               value={form.description}
               onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              className="w-full px-4 py-3 rounded-xl border border-amber-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white mb-4"
+              className="w-full px-4 py-3 rounded-xl border-2 border-amber-200 bg-white text-gray-900 text-base font-medium placeholder-gray-400 resize-none focus:outline-none focus:border-amber-500 mb-4"
             />
 
             <div className="flex gap-3">
@@ -167,7 +167,7 @@ const AgendaManager = () => {
         {/* Items list */}
         <div className="space-y-3">
           {items.length === 0 && (
-            <div className="text-center py-16 text-amber-300 text-lg italic">No agenda items yet.</div>
+            <div className="text-center py-16 text-amber-700 text-lg italic">No agenda items yet.</div>
           )}
           {[...items].sort((a, b) => new Date(a.date) - new Date(b.date)).map((item) => (
             <div key={item._id}
@@ -180,9 +180,9 @@ const AgendaManager = () => {
                   <span className="text-lg font-black leading-none">{new Date(item.date).getDate()}</span>
                 </div>
                 <div>
-                  <p className="font-bold text-amber-900" style={{ fontFamily: "'Cinzel', serif" }}>{item.title}</p>
-                  {item.time && <p className="text-amber-500 text-xs">⏰ {item.time}</p>}
-                  {item.description && <p className="text-amber-600 text-sm mt-0.5">{item.description}</p>}
+                  <p className="font-bold text-gray-900 text-lg">{item.title}</p>
+                  {item.time && <p className="text-amber-800 text-sm font-semibold">⏰ {item.time}</p>}
+                  {item.description && <p className="text-gray-800 text-base font-medium mt-1 whitespace-pre-wrap">{item.description}</p>}
                 </div>
               </div>
               <div className="flex gap-2">

@@ -99,8 +99,8 @@ const rejectRegistration = async (req, res) => {
 
 // DELETE /api/registrations/:id
 const deleteRegistration = async (req, res) => {
-  const reg = await Registration.findByIdAndDelete(req.params.id);
-  if (!reg) throw httpError(404, 'Registration not found');
+  const result = await Registration.deleteOne({ _id: req.params.id });
+  if (result.deletedCount === 0) throw httpError(404, 'Registration not found');
   res.json({ message: 'Request deleted' });
 };
 

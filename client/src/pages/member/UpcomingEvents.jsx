@@ -109,7 +109,7 @@ const UpcomingEvents = () => {
         {Object.keys(grouped).length === 0 && (
           <div className="text-center py-24">
             <p className="text-6xl mb-4">📅</p>
-            <p className="text-red-300 text-lg italic">No events scheduled yet.</p>
+            <p className="text-red-700 text-lg italic">No events scheduled yet.</p>
           </div>
         )}
 
@@ -121,7 +121,7 @@ const UpcomingEvents = () => {
 
               {/* Month header */}
               <div className="flex items-center gap-3 mb-4">
-                <h3 className="text-xs font-bold text-red-400 uppercase tracking-[0.3em]"
+                <h3 className="text-xs font-bold text-red-700 uppercase tracking-[0.3em]"
                   style={{ fontFamily: "'Cinzel', serif" }}>
                   {month}
                 </h3>
@@ -151,11 +151,11 @@ const UpcomingEvents = () => {
                           today_ ? 'bg-gradient-to-br from-red-600 to-red-800'
                                  : past ? 'bg-gray-100' : 'bg-gradient-to-br from-red-700 to-amber-700'
                         }`}>
-                          <span className={`text-xs font-bold uppercase leading-none ${today_ || !past ? 'text-white' : 'text-gray-400'}`}
+                          <span className={`text-xs font-bold uppercase leading-none ${today_ || !past ? 'text-white' : 'text-gray-600'}`}
                             style={{ fontFamily: "'Cinzel', serif" }}>
                             {MONTHS[d.getMonth()]}
                           </span>
-                          <span className={`text-2xl font-black leading-none ${today_ || !past ? 'text-white' : 'text-gray-400'}`}
+                          <span className={`text-2xl font-black leading-none ${today_ || !past ? 'text-white' : 'text-gray-600'}`}
                             style={{ fontFamily: "'Cinzel', serif" }}>
                             {d.getDate()}
                           </span>

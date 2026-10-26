@@ -68,7 +68,7 @@ const SelectiveMessage = () => {
   if (sending) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 py-10">
@@ -76,7 +76,7 @@ const SelectiveMessage = () => {
         <div className="mb-8">
           <button
             onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center gap-2 text-amber-600 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
+            className="flex items-center gap-2 text-amber-800 text-sm font-semibold uppercase tracking-widest hover:text-amber-800 transition-colors mb-4"
             style={{ fontFamily: "'Cinzel', serif" }}
           >
             ← Back to Dashboard
@@ -87,7 +87,7 @@ const SelectiveMessage = () => {
               Selective Message
             </h1>
           </div>
-          <p className="text-amber-600 mt-1 ml-4 text-sm">Search and pick specific members to message</p>
+          <p className="text-amber-800 mt-1 ml-4 text-sm">Search and pick specific members to message</p>
         </div>
 
         {sent && (
@@ -97,7 +97,7 @@ const SelectiveMessage = () => {
               <p className="font-bold text-green-800" style={{ fontFamily: "'Cinzel', serif" }}>Message Sent!</p>
               <p className="text-green-600 text-sm">Your SMS was delivered to the selected members.</p>
             </div>
-            <button onClick={() => setSent(false)} className="ml-auto text-green-400 hover:text-green-600 text-xl">×</button>
+            <button onClick={() => setSent(false)} className="ml-auto text-green-700 hover:text-green-600 text-xl">×</button>
           </div>
         )}
 
@@ -112,17 +112,17 @@ const SelectiveMessage = () => {
               1. Search Members
             </p>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-400">🔍</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-700">🔍</span>
               <input
                 ref={searchRef}
                 type="text"
                 placeholder="Search by name or phone number..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-amber-200 bg-amber-50/30 text-gray-800 placeholder-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all text-sm"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-amber-200 bg-amber-50/30 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all text-sm"
               />
               {searching && (
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 text-xs animate-pulse">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-700 text-sm animate-pulse">
                   Searching...
                 </span>
               )}
@@ -143,12 +143,12 @@ const SelectiveMessage = () => {
                     >
                       <div>
                         <p className="font-semibold text-amber-900 text-sm">{member.name}</p>
-                        <p className="text-amber-400 text-xs">{member.phone} · {member.categories?.join(', ')}</p>
+                        <p className="text-amber-700 text-sm">{member.phone} · {member.categories?.join(', ')}</p>
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                         isSelected ? 'bg-amber-500 border-amber-500' : 'border-amber-300'
                       }`}>
-                        {isSelected && <span className="text-white text-xs">✓</span>}
+                        {isSelected && <span className="text-white text-sm">✓</span>}
                       </div>
                     </button>
                   );
@@ -157,7 +157,7 @@ const SelectiveMessage = () => {
             )}
 
             {query && !searching && results.length === 0 && (
-              <p className="text-center text-amber-400 text-sm mt-3 italic">No members found for "{query}"</p>
+              <p className="text-center text-amber-700 text-sm mt-3 italic">No members found for "{query}"</p>
             )}
           </div>
 
@@ -171,7 +171,7 @@ const SelectiveMessage = () => {
                 {selected.map((m) => (
                   <span
                     key={m._id}
-                    className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-semibold rounded-full px-3 py-1.5 shadow-sm"
+                    className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-semibold rounded-full px-3 py-1.5 shadow-sm"
                     style={{ fontFamily: "'Cinzel', serif" }}
                   >
                     {m.name}
@@ -195,8 +195,7 @@ const SelectiveMessage = () => {
               placeholder="Type your personal message here..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-4 rounded-2xl border border-amber-200 bg-amber-50/30 text-gray-800 placeholder-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none text-sm leading-relaxed transition-all"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}
+              className="w-full px-4 py-4 rounded-2xl border border-amber-200 bg-amber-50/30 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none text-sm leading-relaxed transition-all"
             />
           </div>
 

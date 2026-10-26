@@ -62,7 +62,7 @@ const BirthdaySettings = () => {
   if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#FDFBF5]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+    <div className="min-h-screen bg-[#FDFBF5] font-sans">
       <Navbar />
 
       {/* Hero */}
@@ -121,11 +121,11 @@ const BirthdaySettings = () => {
               {todayBirthdays.map((m) => (
                 <div key={m._id}
                   className="flex items-center gap-2 bg-white border border-amber-200 rounded-full px-3 py-1.5 shadow-sm">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-white text-sm font-bold">
                     {m.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-xs font-semibold text-amber-900">{m.name}</span>
-                  <span className="text-xs text-amber-400">{m.phone}</span>
+                  <span className="text-sm font-semibold text-amber-900">{m.name}</span>
+                  <span className="text-sm text-amber-700">{m.phone}</span>
                 </div>
               ))}
             </div>
@@ -141,7 +141,7 @@ const BirthdaySettings = () => {
               <p className="font-bold text-amber-900 text-lg" style={{ fontFamily: "'Cinzel', serif" }}>
                 Auto Birthday SMS
               </p>
-              <p className="text-amber-500 text-sm mt-0.5">
+              <p className="text-amber-700 text-sm mt-0.5">
                 {settings.enabled
                   ? '✅ Enabled — system will auto-send on birthdays'
                   : '⛔ Disabled — no birthday SMS will be sent'}
@@ -166,18 +166,18 @@ const BirthdaySettings = () => {
               style={{ fontFamily: "'Cinzel', serif" }}>
               Send Time
             </p>
-            <div className="flex items-center gap-4 mt-2">
-              <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-2">
+              <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 shrink-0 self-start">
                 <span className="text-2xl">⏰</span>
                 <div>
-                  <p className="text-2xl font-black text-amber-800 tabular-nums"
+                  <p className="text-2xl font-black text-amber-800 tabular-nums whitespace-nowrap"
                     style={{ fontFamily: "'Cinzel', serif" }}>
                     8:00 AM
                   </p>
-                  <p className="text-amber-400 text-xs">Lagos time — every day</p>
+                  <p className="text-amber-700 text-sm whitespace-nowrap">Lagos time — every day</p>
                 </div>
               </div>
-              <p className="text-amber-500 text-sm italic">
+              <p className="text-amber-700 text-sm italic">
                 The system checks birthdays every day at 8:00 AM and sends SMS automatically.
               </p>
             </div>
@@ -191,18 +191,18 @@ const BirthdaySettings = () => {
                 Message Template
               </p>
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-mono ${charCount > 160 ? 'text-amber-600 font-bold' : 'text-amber-300'}`}>
+                <span className={`text-sm font-mono ${charCount > 160 ? 'text-amber-800 font-bold' : 'text-amber-700'}`}>
                   {charCount}/160
                 </span>
                 {charCount > 0 && (
-                  <span className="text-xs bg-amber-50 border border-amber-200 text-amber-600 rounded-full px-2 py-0.5">
+                  <span className="text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-full px-2 py-0.5">
                     {smsUnits} SMS unit{smsUnits > 1 ? 's' : ''}
                   </span>
                 )}
               </div>
             </div>
 
-            <p className="text-xs text-amber-400 italic mb-3">
+            <p className="text-sm text-amber-700 italic mb-3">
               Use{' '}
               <code className="bg-amber-50 border border-amber-200 text-amber-700 px-1.5 py-0.5 rounded-lg font-mono">
                 {'{name}'}
@@ -215,12 +215,11 @@ const BirthdaySettings = () => {
               value={settings.template}
               onChange={handleTemplateChange}
               className="w-full px-4 py-4 rounded-2xl border border-amber-200 bg-amber-50/30 text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none transition-all text-sm leading-relaxed"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1rem' }}
             />
 
             {/* Live preview */}
             <div className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl p-5">
-              <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-2"
+              <p className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-2"
                 style={{ fontFamily: "'Cinzel', serif" }}>
                 Live Preview — how it will look to the member
               </p>
@@ -250,9 +249,9 @@ const BirthdaySettings = () => {
           </p>
           <div className="space-y-2 text-sm text-amber-700">
             <p>🕗 Every day at <strong>8:00 AM Lagos time</strong>, the system automatically checks MongoDB for members whose birthday matches today's date.</p>
-            <p>📱 Each birthday member receives a <strong>personalised SMS</strong> with their name inserted where you placed <code className="bg-amber-50 border border-amber-100 px-1 rounded text-xs">{'{name}'}</code>.</p>
+            <p>📱 Each birthday member receives a <strong>personalised SMS</strong> with their name inserted where you placed <code className="bg-amber-50 border border-amber-100 px-1 rounded text-sm">{'{name}'}</code>.</p>
             <p>📜 Every sent birthday SMS is logged in <strong>Message History</strong> with delivery status.</p>
-            <p>🔑 Make sure your <strong>Termii API key</strong> is set in the server <code className="bg-amber-50 border border-amber-100 px-1 rounded text-xs">.env</code> file for SMS to actually send.</p>
+            <p>🔑 Make sure your <strong>Termii API key</strong> is set in the server <code className="bg-amber-50 border border-amber-100 px-1 rounded text-sm">.env</code> file for SMS to actually send.</p>
           </div>
         </div>
       </div>
